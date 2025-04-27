@@ -1,88 +1,38 @@
-variable "region" {
-  description = "AWS region to deploy into."
-  type        = string
-  default     = "us-east-1"
-}
+# variables.tf
+variable "project" { type = string }
+variable "aws_region" { type = string }
+variable "environment" { type = string }
+variable "vpc_cidr" { type = string }
+variable "public_subnets" { type = list(string) }
+variable "private_subnets" { type = list(string) }
+variable "availability_zones" { type = list(string) }
+variable "alert_email" { type = string }
+variable "db_engine" { type = string }
 
-variable "backend_bucket" {
-  description = "S3 bucket for Terraform remote state."
-  type        = string
-}
+variable "stag_instance_type" { type = string }
+variable "stag_ami_id" { type = string }
+variable "stag_db_instance_class" { type = string }
+variable "stag_db_init_storage" { type = number }
+variable "stag_db_username" { type = string }
+variable "stag_db_password" { type = string }
 
-variable "lock_table" {
-  description = "DynamoDB table for Terraform state locking."
-  type        = string
-}
+variable "stag_db_delete_snapshot" { type = bool }
+variable "stag_db_multi_az" { type = bool }
+variable "stag_db_iam_authentication" { type = bool }
 
-variable "instance_type" {
-  description = "EC2 instance type for the application server."
-  type        = string
-  default     = "t2.micro"
-}
 
-variable "ami_id" {
-  description = "AMI to use for the EC2 instance (must support your OS)."
-  type        = string
-}
+variable "stag_redis_node_type" { type = string }
 
-variable "vpc_cidr" {
-  description = "CIDR block for the VPC."
-  type        = string
-  default     = "10.0.0.0/16"
-}
+variable "prod_instance_type" { type = string }
+variable "prod_ami_id" { type = string }
+variable "prod_db_instance_class" { type = string }
+variable "prod_db_init_storage" { type = number }
+variable "prod_db_username" { type = string }
+variable "prod_db_password" { type = string }
 
-variable "public_subnets" {
-  description = "List of CIDR blocks for public subnets."
-  type        = list(string)
-}
+variable "prod_db_delete_snapshot" { type = bool }
+variable "prod_db_multi_az" { type = bool }
+variable "prod_db_iam_authentication" { type = bool }
 
-variable "private_subnets" {
-  description = "List of CIDR blocks for private subnets."
-  type        = list(string)
-}
 
-variable "availability_zones" {
-  description = "List of AZs to use for the subnets."
-  type        = list(string)
-}
-
-variable "db_engine" {
-  description = "Database engine for the RDS instance (e.g., mysql, postgres)."
-  type        = string
-  default     = "mysql"
-}
-
-variable "db_instance_class" {
-  description = "RDS instance class."
-  type        = string
-  default     = "db.t3.micro"
-}
-
-variable "db_storage" {
-  description = "Allocated storage for RDS (in GB)."
-  type        = number
-  default     = 20
-}
-
-variable "db_username" {
-  description = "Username for the RDS instance."
-  type        = string
-}
-
-variable "db_password" {
-  description = "Password for the RDS instance."
-  type        = string
-  sensitive   = true
-}
-
-variable "db_parameter_group" {
-  description = "Parameter group for the RDS instance."
-  type        = string
-  default     = "default.mysql8.0"
-}
-
-variable "redis_node_type" {
-  description = "ElastiCache Redis node type."
-  type        = string
-  default     = "cache.t3.micro"
-}
+variable "prod_redis_node_type" { type = string }

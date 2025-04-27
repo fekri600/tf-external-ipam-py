@@ -1,3 +1,4 @@
-output "vpc_id" { value = aws_vpc.this.id }
+# modules/environment/outputs.tf
 
-output "app_instance_public_ip" { value = aws_instance.app.public_ip }
+output "rds_id"        { value = aws_db_instance.this.id }
+output "redis_id"      { value = aws_elasticache_replication_group.redis.id }
