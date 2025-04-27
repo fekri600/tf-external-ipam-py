@@ -33,6 +33,7 @@ module "staging" {
 
   redis_node_type = var.stag_redis_node_type
 
+  depends_on = [module.network]
 }
 
 module "production" {
@@ -59,6 +60,7 @@ module "production" {
 
   redis_node_type = var.prod_redis_node_type
 
+  depends_on = [module.network]
 }
 
 #module "cloudwatch" {
