@@ -10,22 +10,25 @@ module "network" {
 }
 
 module "staging" {
-  source            = "./modules/environment"
-  environment       = "staging"
-  prefix            = local.name_prefix
-  ami_id            = var.stag_ami_id
-  instance_type     = var.stag_instance_type
-  security_group_id = module.network.ec2_security_group_id
+  source                  = "./modules/environment"
+  environment             = "staging"
+  prefix                  = local.name_prefix
+  instance_type           = var.stag_instance_type
+  security_group_id       = module.network.ec2_security_group_id
+  redis_security_group_id = module.network.redis_security_group_id
+  arch                    = local.arch
 
   private_subnet_ids = module.network.private_subnet_ids
   target_group_arn   = module.network.target_group_arn
 
-  db_engine             = var.db_engine
-  db_instance_class     = var.stag_db_instance_class
-  db_storage            = var.stag_db_init_storage
-  db_username           = var.stag_db_username
-  db_password           = var.stag_db_password
-  db_security_group_ids = [module.network.db_security_group_id]
+  db_engine               = var.db_engine
+  db_instance_class       = var.stag_db_instance_class
+  db_storage              = var.stag_db_init_storage
+  db_username             = var.stag_db_username
+  db_password             = var.stag_db_password
+  db_security_group_ids   = [module.network.db_security_group_id]
+  rds_subnet_group_name   = module.network.rds_subnet_group_name
+  redis_subnet_group_name = module.network.redis_subnet_group_name
 
   db_delete_snapshot    = var.stag_db_delete_snapshot
   db_multi_az           = var.stag_db_multi_az
@@ -37,22 +40,25 @@ module "staging" {
 }
 
 module "production" {
-  source            = "./modules/environment"
-  environment       = "production"
-  prefix            = local.name_prefix
-  ami_id            = var.prod_ami_id
-  instance_type     = var.prod_instance_type
-  security_group_id = module.network.ec2_security_group_id
+  source                  = "./modules/environment"
+  environment             = "production"
+  prefix                  = local.name_prefix
+  instance_type           = var.prod_instance_type
+  security_group_id       = module.network.ec2_security_group_id
+  redis_security_group_id = module.network.redis_security_group_id
+  arch                    = local.arch
 
   private_subnet_ids = module.network.private_subnet_ids
   target_group_arn   = module.network.target_group_arn
 
-  db_engine             = var.db_engine
-  db_instance_class     = var.prod_db_instance_class
-  db_storage            = var.prod_db_init_storage
-  db_username           = var.prod_db_username
-  db_password           = var.prod_db_password
-  db_security_group_ids = [module.network.db_security_group_id]
+  db_engine               = var.db_engine
+  db_instance_class       = var.prod_db_instance_class
+  db_storage              = var.prod_db_init_storage
+  db_username             = var.prod_db_username
+  db_password             = var.prod_db_password
+  db_security_group_ids   = [module.network.db_security_group_id]
+  rds_subnet_group_name   = module.network.rds_subnet_group_name
+  redis_subnet_group_name = module.network.redis_subnet_group_name
 
   db_delete_snapshot    = var.prod_db_delete_snapshot
   db_multi_az           = var.prod_db_multi_az

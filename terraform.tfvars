@@ -10,7 +10,6 @@ db_engine          = "mysql"
 
 # Staging environment variables
 stag_instance_type         = "t2.micro"
-stag_ami_id                = "ami-0c7217cdde317cfec" # Amazon Linux 2 AMI for us-east-1
 stag_db_instance_class     = "db.t3.micro"
 stag_db_init_storage       = 20
 stag_db_username           = "admin"
@@ -22,7 +21,6 @@ stag_redis_node_type       = "cache.t3.micro"
 
 # Production environment variables
 prod_instance_type         = "t2.small"
-prod_ami_id                = "ami-0c7217cdde317cfec" # Amazon Linux 2 AMI for us-east-1
 prod_db_instance_class     = "db.t3.small"
 prod_db_init_storage       = 50
 prod_db_username           = "admin"

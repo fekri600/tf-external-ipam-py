@@ -3,7 +3,7 @@ resource "aws_vpc" "this" {
   cidr_block           = var.vpc_cidr
   enable_dns_support   = true
   enable_dns_hostnames = true
-  tags = { Name = "${var.prefix}-vpc-${substr(var.aws_region,0,2)}" }
+  tags = { Name = "${var.prefix}-${var.environment}-vpc-${substr(var.aws_region,0,2)}" }
 }
 
 resource "aws_subnet" "public" {
@@ -11,37 +11,34 @@ resource "aws_subnet" "public" {
   vpc_id            = aws_vpc.this.id
   cidr_block        = var.public_subnets[count.index]
   availability_zone = var.availability_zones[count.index]
-  tags = { Name = "${var.prefix}-pub-subnet-${substr(var.availability_zones[count.index],length(var.availability_zones[count.index]) -1, 1)}" }
+  tags = { Name = "${var.prefix}-${var.environment}-pub-subnet-${substr(var.availability_zones[count.index],length(var.availability_zones[count.index]) -1, 1)}" }
 }
-
 
 resource "aws_subnet" "private" {
   count             = length(var.private_subnets)
   vpc_id            = aws_vpc.this.id
   cidr_block        = var.private_subnets[count.index]
   availability_zone = var.availability_zones[count.index]
-  tags = { Name = "${var.prefix}-priv-subnet-${substr(var.availability_zones[count.index],length(var.availability_zones[count.index]) -1, 1)}" }
+  tags = { Name = "${var.prefix}-${var.environment}-priv-subnet-${substr(var.availability_zones[count.index],length(var.availability_zones[count.index]) -1, 1)}" }
 }
 
 resource "aws_internet_gateway" "this" {
   vpc_id = aws_vpc.this.id
-  tags   = { Name = "${var.prefix}-igw-${substr(var.aws_region,0,2)}" }
+  tags   = { Name = "${var.prefix}-${var.environment}-igw-${substr(var.aws_region,0,2)}" }
 }
 
 resource "aws_eip" "nat" {
   count = length(var.public_subnets)
   domain = "vpc"
-  tags   = { Name = "${var.prefix}-nat-ip" }
+  tags   = { Name = "${var.prefix}-${var.environment}-nat-ip" }
 }
 
 resource "aws_nat_gateway" "this" {
   count = length(var.public_subnets)
   allocation_id = aws_eip.nat[count.index].id
   subnet_id     = aws_subnet.public[count.index].id
-    tags = { Name = "${var.prefix}-gtw-nat-${substr(var.availability_zones[count.index],length(var.availability_zones[count.index]) -1, 1)}" }
-
+  tags = { Name = "${var.prefix}-${var.environment}-gtw-nat-${substr(var.availability_zones[count.index],length(var.availability_zones[count.index]) -1, 1)}" }
 }
-
 
 resource "aws_route_table" "private" {
   count  = length(var.private_subnets)
@@ -53,7 +50,7 @@ resource "aws_route_table" "private" {
   }
 
   tags = {
-    Name = "${var.prefix}-priv-route-${substr(var.availability_zones[count.index],length(var.availability_zones[count.index]) -1, 1)}"
+    Name = "${var.prefix}-${var.environment}-priv-route-${substr(var.availability_zones[count.index],length(var.availability_zones[count.index]) -1, 1)}"
   }
 }
 
@@ -71,9 +68,7 @@ resource "aws_route_table" "public" {
     gateway_id = aws_internet_gateway.this.id
   }
 
-
-  tags = { Name = "${var.prefix}-pub-route-${substr(var.aws_region,0,2)}" }
-
+  tags = { Name = "${var.prefix}-${var.environment}-pub-route-${substr(var.aws_region,0,2)}" }
 }
 
 resource "aws_route_table_association" "public" {
@@ -83,7 +78,7 @@ resource "aws_route_table_association" "public" {
 }
 
 resource "aws_lb_target_group" "nginx" {
-  name     = "${var.prefix}-tg"
+  name     = "${var.prefix}-${var.environment}-tg"
   port     = 80
   protocol = "HTTP"
   vpc_id   = aws_vpc.this.id
@@ -98,12 +93,12 @@ resource "aws_lb_target_group" "nginx" {
   }
 
   tags = {
-    Name = "${var.prefix}-tg"
+    Name = "${var.prefix}-${var.environment}-tg"
   }
 }
 
 resource "aws_lb" "nginx" {
-  name               = "${var.prefix}-alb"
+  name               = "${var.prefix}-${var.environment}-alb"
   internal           = false
   load_balancer_type = "application"
   security_groups    = [aws_security_group.alb.id]
@@ -112,7 +107,7 @@ resource "aws_lb" "nginx" {
   enable_deletion_protection = false
 
   tags = {
-    Name = "${var.prefix}-alb"
+    Name = "${var.prefix}-${var.environment}-alb"
   }
 }
 
@@ -127,9 +122,8 @@ resource "aws_lb_listener" "nginx" {
   }
 }
 
-
 resource "aws_security_group" "alb" {
-  name        = "${var.prefix}-alb-sg"
+  name        = "${var.prefix}-${var.environment}-alb-sg"
   description = "Allow HTTP/HTTPS from internet to ALB"
   vpc_id      = aws_vpc.this.id
 
@@ -155,12 +149,12 @@ resource "aws_security_group" "alb" {
   }
 
   tags = {
-    Name = "${var.prefix}-alb-sg"
+    Name = "${var.prefix}-${var.environment}-alb-sg"
   }
 }
 
 resource "aws_security_group" "ec2" {
-  name        = "${var.prefix}-ec2-sg"
+  name        = "${var.prefix}-${var.environment}-ec2-sg"
   description = "Allow traffic from ALB"
   vpc_id      = aws_vpc.this.id
 
@@ -168,7 +162,7 @@ resource "aws_security_group" "ec2" {
     from_port       = 80
     to_port         = 80
     protocol        = "tcp"
-    security_groups = [aws_security_group.alb.id]  # Only ALB can talk to EC2 on port 80
+    security_groups = [aws_security_group.alb.id]
   }
 
   egress {
@@ -179,12 +173,12 @@ resource "aws_security_group" "ec2" {
   }
 
   tags = {
-    Name = "${var.prefix}-ec2-sg"
+    Name = "${var.prefix}-${var.environment}-ec2-sg"
   }
 }
 
 resource "aws_security_group" "rds" {
-  name        = "${var.prefix}-rds-sg"
+  name        = "${var.prefix}-${var.environment}-rds-sg"
   description = "Allow DB access from EC2"
   vpc_id      = aws_vpc.this.id
 
@@ -193,7 +187,7 @@ resource "aws_security_group" "rds" {
     from_port        = 3306
     to_port          = 3306
     protocol         = "tcp"
-    security_groups  = [aws_security_group.ec2.id]  # Allow from EC2 SG
+    security_groups  = [aws_security_group.ec2.id]
   }
 
   egress {
@@ -204,8 +198,43 @@ resource "aws_security_group" "rds" {
   }
 
   tags = {
-    Name = "${var.prefix}-rds-sg"
+    Name = "${var.prefix}-${var.environment}-rds-sg"
   }
+}
+
+resource "aws_security_group" "redis" {
+  name        = "${var.prefix}-${var.environment}-redis-sg"
+  description = "Allow Redis access from EC2"
+  vpc_id      = aws_vpc.this.id
+
+  ingress {
+    description      = "Allow Redis access from EC2 instances"
+    from_port        = 6379
+    to_port          = 6379
+    protocol         = "tcp"
+    security_groups  = [aws_security_group.ec2.id]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "${var.prefix}-${var.environment}-redis-sg"
+  }
+}
+
+resource "aws_db_subnet_group" "rds" {
+  name       = "${var.prefix}-${var.environment}-rds-subnet-group"
+  subnet_ids = aws_subnet.private[*].id
+}
+
+resource "aws_elasticache_subnet_group" "redis" {
+  name       = "${var.prefix}-${var.environment}-redis-subnet-group"
+  subnet_ids = aws_subnet.private[*].id
 }
 
 
