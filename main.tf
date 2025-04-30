@@ -69,19 +69,29 @@ module "production" {
   depends_on = [module.network]
 }
 
-#module "cloudwatch" {
-#  source      = "./modules/cloudwatch"
-#  aws_region  = var.aws_region
-#  alert_email = var.alert_email
-#  env_configs = {
-#    staging    = module.staging
-#    production = module.production
-#  }
-#  vpc_id = module.network.vpc_id
-#
-#  depends_on = [
-#    module.network,
-#    module.staging,
-#    module.production,
-#  ]
-#}
+module "cloudwatch" {
+  source      = "./modules/cloudwatch"
+  aws_region  = var.aws_region
+  alert_email = var.alert_email
+  env_configs = {
+    staging = {
+      asg_name = module.staging.asg_name
+      rds_id   = module.staging.rds_id
+      redis_id = module.staging.redis_id
+    }
+    production = {
+      asg_name = module.production.asg_name
+      rds_id   = module.production.rds_id
+      redis_id = module.production.redis_id
+    }
+  }
+  vpc_id = module.network.vpc_id
+
+  depends_on = [
+    module.network,
+    module.staging,
+    module.production,
+  ]
+}
+
+
