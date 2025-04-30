@@ -6,10 +6,10 @@ data "aws_ssm_parameter" "ami" {
 }
 
 resource "aws_iam_role" "ec2_role" {
-  name               = "${var.prefix}-${var.environment}-ec2-role"
+  name = "${var.prefix}-${var.environment}-ec2-role"
   assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [{ Effect="Allow", Principal={ Service="ec2.amazonaws.com" }, Action="sts:AssumeRole" }]
+    Version   = "2012-10-17"
+    Statement = [{ Effect = "Allow", Principal = { Service = "ec2.amazonaws.com" }, Action = "sts:AssumeRole" }]
   })
 }
 
@@ -25,18 +25,18 @@ resource "aws_iam_instance_profile" "ec2_profile" {
 
 # 1. Launch Template
 resource "aws_launch_template" "this" {
-  name_prefix   = "${var.prefix}-${var.environment}-lt-"
-  image_id      = data.aws_ssm_parameter.ami.value
-  instance_type = var.instance_type
+  name_prefix            = "${var.prefix}-${var.environment}-lt-"
+  image_id               = data.aws_ssm_parameter.ami.value
+  instance_type          = var.instance_type
   vpc_security_group_ids = [var.security_group_id]
 
   iam_instance_profile {
     name = aws_iam_instance_profile.ec2_profile.name
   }
-  
+
   user_data = base64encode(templatefile("${path.module}/user_data.sh.tmpl", {
     log_group_prefix = "${var.prefix}-${var.environment}",
-    }))
+  }))
 
   tag_specifications {
     resource_type = "instance"
@@ -79,8 +79,8 @@ resource "aws_db_instance" "this" {
   vpc_security_group_ids = var.db_security_group_ids
   skip_final_snapshot    = var.db_delete_snapshot
 
-  db_subnet_group_name   = var.rds_subnet_group_name
-  multi_az               = var.db_multi_az
+  db_subnet_group_name = var.rds_subnet_group_name
+  multi_az             = var.db_multi_az
 
   iam_database_authentication_enabled = var.db_iam_authentication
 
@@ -92,7 +92,7 @@ resource "aws_db_instance" "this" {
 
 resource "aws_elasticache_replication_group" "redis" {
   replication_group_id = "redis-${var.prefix}-${var.environment}"
-  description = "redis replication group for ${var.environment} environment"
+  description          = "redis replication group for ${var.environment} environment"
   engine               = "redis"
   node_type            = var.redis_node_type
   num_cache_clusters   = 1

@@ -3,7 +3,7 @@ resource "aws_vpc" "this" {
   cidr_block           = var.vpc_cidr
   enable_dns_support   = true
   enable_dns_hostnames = true
-  tags = { Name = "${var.prefix}-${var.environment}-vpc-${substr(var.aws_region,0,2)}" }
+  tags                 = { Name = "${var.prefix}-${var.environment}-vpc-${substr(var.aws_region, 0, 2)}" }
 }
 
 resource "aws_subnet" "public" {
@@ -11,7 +11,7 @@ resource "aws_subnet" "public" {
   vpc_id            = aws_vpc.this.id
   cidr_block        = var.public_subnets[count.index]
   availability_zone = var.availability_zones[count.index]
-  tags = { Name = "${var.prefix}-${var.environment}-pub-subnet-${substr(var.availability_zones[count.index],length(var.availability_zones[count.index]) -1, 1)}" }
+  tags              = { Name = "${var.prefix}-${var.environment}-pub-subnet-${substr(var.availability_zones[count.index], length(var.availability_zones[count.index]) - 1, 1)}" }
 }
 
 resource "aws_subnet" "private" {
@@ -19,25 +19,25 @@ resource "aws_subnet" "private" {
   vpc_id            = aws_vpc.this.id
   cidr_block        = var.private_subnets[count.index]
   availability_zone = var.availability_zones[count.index]
-  tags = { Name = "${var.prefix}-${var.environment}-priv-subnet-${substr(var.availability_zones[count.index],length(var.availability_zones[count.index]) -1, 1)}" }
+  tags              = { Name = "${var.prefix}-${var.environment}-priv-subnet-${substr(var.availability_zones[count.index], length(var.availability_zones[count.index]) - 1, 1)}" }
 }
 
 resource "aws_internet_gateway" "this" {
   vpc_id = aws_vpc.this.id
-  tags   = { Name = "${var.prefix}-${var.environment}-igw-${substr(var.aws_region,0,2)}" }
+  tags   = { Name = "${var.prefix}-${var.environment}-igw-${substr(var.aws_region, 0, 2)}" }
 }
 
 resource "aws_eip" "nat" {
-  count = length(var.public_subnets)
+  count  = length(var.public_subnets)
   domain = "vpc"
   tags   = { Name = "${var.prefix}-${var.environment}-nat-ip" }
 }
 
 resource "aws_nat_gateway" "this" {
-  count = length(var.public_subnets)
+  count         = length(var.public_subnets)
   allocation_id = aws_eip.nat[count.index].id
   subnet_id     = aws_subnet.public[count.index].id
-  tags = { Name = "${var.prefix}-${var.environment}-gtw-nat-${substr(var.availability_zones[count.index],length(var.availability_zones[count.index]) -1, 1)}" }
+  tags          = { Name = "${var.prefix}-${var.environment}-gtw-nat-${substr(var.availability_zones[count.index], length(var.availability_zones[count.index]) - 1, 1)}" }
 }
 
 resource "aws_route_table" "private" {
@@ -50,7 +50,7 @@ resource "aws_route_table" "private" {
   }
 
   tags = {
-    Name = "${var.prefix}-${var.environment}-priv-route-${substr(var.availability_zones[count.index],length(var.availability_zones[count.index]) -1, 1)}"
+    Name = "${var.prefix}-${var.environment}-priv-route-${substr(var.availability_zones[count.index], length(var.availability_zones[count.index]) - 1, 1)}"
   }
 }
 
@@ -68,7 +68,7 @@ resource "aws_route_table" "public" {
     gateway_id = aws_internet_gateway.this.id
   }
 
-  tags = { Name = "${var.prefix}-${var.environment}-pub-route-${substr(var.aws_region,0,2)}" }
+  tags = { Name = "${var.prefix}-${var.environment}-pub-route-${substr(var.aws_region, 0, 2)}" }
 }
 
 resource "aws_route_table_association" "public" {
@@ -183,11 +183,11 @@ resource "aws_security_group" "rds" {
   vpc_id      = aws_vpc.this.id
 
   ingress {
-    description      = "Allow MySQL access from EC2 security group"
-    from_port        = 3306
-    to_port          = 3306
-    protocol         = "tcp"
-    security_groups  = [aws_security_group.ec2.id]
+    description     = "Allow MySQL access from EC2 security group"
+    from_port       = 3306
+    to_port         = 3306
+    protocol        = "tcp"
+    security_groups = [aws_security_group.ec2.id]
   }
 
   egress {
@@ -208,11 +208,11 @@ resource "aws_security_group" "redis" {
   vpc_id      = aws_vpc.this.id
 
   ingress {
-    description      = "Allow Redis access from EC2 instances"
-    from_port        = 6379
-    to_port          = 6379
-    protocol         = "tcp"
-    security_groups  = [aws_security_group.ec2.id]
+    description     = "Allow Redis access from EC2 instances"
+    from_port       = 6379
+    to_port         = 6379
+    protocol        = "tcp"
+    security_groups = [aws_security_group.ec2.id]
   }
 
   egress {
