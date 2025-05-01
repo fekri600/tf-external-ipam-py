@@ -17,6 +17,6 @@ apply:
 delete:
 	@echo "🗑️ Destroying root infrastructure..."
 	terraform destroy -auto-approve
-
+	
 	@echo "🗑️ Destroying backend infrastructure..."
 	cd modules/backend_setup && terraform destroy -auto-approve
