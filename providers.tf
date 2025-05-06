@@ -8,13 +8,7 @@ terraform {
     }
   }
 
-  backend "s3" {
-    bucket         = "nginx-backend-rsm"
-    key            = "terraform/state/infra_redesign_project.tfstate"
-    region         = "us-east-1"
-    dynamodb_table = "backend-d-db-table"
-    encrypt        = true
-  }
+  backend "s3" {}
 }
 
 provider "aws" {
