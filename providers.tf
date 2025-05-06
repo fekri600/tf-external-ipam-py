@@ -8,16 +8,9 @@ terraform {
     }
   }
 
-  #   backend "s3" {
-  #     bucket         = "your-backend-bucket-name"
-  #     key            = "terraform/state/infra_redesign_project.tfstate"
-  #     region         = "us-east-1"
-  #     dynamodb_table = "your-lock-table"
-  #     encrypt        = true
-  #
-  #   }
+  backend "s3" {}
 }
 
 provider "aws" {
-  region = var.aws_region
+  region = "us-east-1"
 }
