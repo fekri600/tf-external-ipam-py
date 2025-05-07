@@ -19,7 +19,7 @@ resource "aws_iam_openid_connect_provider" "github" {
 resource "aws_iam_role" "github_trust_role" {
   name = "GitHubTrustRole"
 
-  assume_role_policy = templatefile("${path.module}/oidc/policies/github_aws_oidc_policy.json", {
+  assume_role_policy = templatefile("${path.module}/policies/trust-policy.json", {
     oidc_provider_arn = local.oidc_provider_arn
   })
 }
@@ -27,7 +27,7 @@ resource "aws_iam_role" "github_trust_role" {
 # Define the IAM policy with necessary permissions
 resource "aws_iam_policy" "github_devops_policy" {
   name   = "GitHubDevOpsDeployPolicy"
-  policy = templatefile("${path.module}/oidc/policies/github_devops_policy.json", {
+  policy = templatefile("${path.module}/policies/permission-policy.json", {
     state_bucket_name = var.state_bucket_name
   })
 }
