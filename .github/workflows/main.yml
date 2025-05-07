@@ -41,8 +41,8 @@ jobs:
           role-duration-seconds: 3600
 
       - name: Terraform Init
-        run: terraform init 
-	
+        run: terraform init
+
       - name: Terraform Format Check
         run: terraform fmt -check
 
