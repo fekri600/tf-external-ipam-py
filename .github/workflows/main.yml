@@ -39,7 +39,7 @@ jobs:
           aws-region: us-east-1
           role-session-name: GitHubActions-${{ github.run_id }}
           role-duration-seconds: 3600
-
+      # what's the problem here
       - name: Terraform Init
         run: terraform init
 
