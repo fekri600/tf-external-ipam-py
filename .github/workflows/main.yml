@@ -1,0 +1,61 @@
+name: Terraform Deployment to AWS
+
+on:
+  workflow_dispatch:
+    inputs:
+      destroy:
+        description: 'Set true to destroy the environment'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  terraform:
+    name: 'Terraform Apply'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.11.4
+
+      - name: Configure AWS credentials (DevOps role)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.GITHUBTRUSTROLE }}
+          aws-region: us-east-1
+          role-session-name: GitHubActions-${{ github.run_id }}
+          role-duration-seconds: 3600
+      # what's the problem here
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Format Check
+        run: terraform fmt -check
+
+      - name: Terraform Validate
+        run: terraform validate
+
+      - name: Terraform Apply
+        run: |
+          if [[ "${{ github.event.inputs.destroy }}" == "true" ]]; then
+            terraform destroy -auto-approve
+          else
+            terraform apply -auto-approve
+          fi
+        env:
+          TF_VAR_stag_db_password: ${{ secrets.STAG_DB_PASS }}
+          TF_VAR_prod_db_password: ${{ secrets.PROD_DB_PASS }}

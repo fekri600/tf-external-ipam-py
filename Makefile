@@ -3,44 +3,45 @@
 
 apply:
 	@echo "🔧 Deploying backend module..."
-	cd modules/backend_setup
-	terraform init
-	terraform apply -auto-approve
+	cd modules/backend_setup && terraform init && terraform apply -auto-approve
 
 	@echo "📦 Saving backend details..."
-	cd modules/backend_setup
-	BACKEND_BUCKET=$$(terraform output -raw bucket_name)
-	BACKEND_TABLE=$$(terraform output -raw dynamodb_table_name)
-	BACKEND_REGION=$$(grep -A 1 'region' ../../providers.tf | tail -n 1 | sed 's/.*= "\(.*\)"/\1/')
+	cd modules/backend_setup && terraform output -raw bucket_name > .backend_bucket
+	cd modules/backend_setup && terraform output -raw dynamodb_table_name > .backend_table
+	cd modules/backend_setup && terraform output -raw region > .backend_region
+	cd modules/backend_setup && echo "terraform/state/root.tfstate" > .key
 
-	@echo "🛠️ Generating backend-config.hcl in modules/oidc/..."
-	echo "bucket         = \"$$BACKEND_BUCKET\"" > ../../modules/oidc/backend-config.hcl
-	echo "key            = \"terraform/state/infra_redesign_project.tfstate\"" >> ../../modules/oidc/backend-config.hcl
-	echo "region         = \"$$BACKEND_REGION\"" >> ../../modules/oidc/backend-config.hcl
-	echo "dynamodb_table = \"$$BACKEND_TABLE\"" >> ../../modules/oidc/backend-config.hcl
+	@echo "🛠️ Generating providers.tf..."
+	bash generate_provider_file.sh
 
-	@echo "$$BACKEND_BUCKET" > ../../modules/oidc/.backend_bucket
+	@echo "📄 Copying providers.tf to modules/oidc..."
+	cp providers.tf modules/oidc/providers.tf
 
-	@echo "⚙️ Initializing and applying root Terraform..."
-	terraform init -backend-config=modules/oidc/backend-config.hcl
-	terraform apply -auto-approve
-
-apply-pipeline:
 	@echo "🚀 Deploying GitHub OIDC pipeline..."
-	cd modules/oidc
-	BACKEND_BUCKET=$$(cat .backend_bucket)
-	terraform init -backend-config=backend-config.hcl
-	terraform apply -auto-approve -var="state_bucket_name=$$BACKEND_BUCKET"
+	BACKEND_BUCKET=$$(cat modules/backend_setup/.backend_bucket)
+	cd modules/oidc && \
+		terraform init && \
+		( terraform workspace list | grep -q 'oidc' && terraform workspace select oidc || terraform workspace new oidc ) && \
+		terraform apply -auto-approve -var="state_bucket_name=$$BACKEND_BUCKET" && \
+		terraform output -raw github_trust_role_arn > .github_role
+
+	@echo "✅ Apply completed."
+
 
 delete:
-	@echo "🗑️ Destroying root infrastructure..."
-	terraform destroy -auto-approve
-
-	@echo "🗑️ Destroying backend infrastructure..."
-	cd modules/backend_setup
-	terraform destroy -auto-approve
-
-delete-pipeline:
+	
 	@echo "🗑️ Destroying GitHub OIDC pipeline infrastructure..."
-	cd modules/oidc
-	terraform destroy -auto-approve
+	cd modules/oidc && \
+		terraform init && \
+		( terraform workspace list | grep -q 'oidc' && terraform workspace select oidc || terraform workspace new oidc ) && \
+		terraform destroy -auto-approve
+
+	
+	@echo "🗑️ Destroying backend infrastructure..."
+	cd modules/backend_setup && terraform destroy -auto-approve
+
+	@echo "🧹 Cleaning up generated files..."
+	rm -f modules/backend_setup/.backend_bucket modules/backend_setup/.backend_table modules/backend_setup/.backend_region modules/backend_setup/.key modules/oidc/.github_role
+
+
+	@echo "✅ Delete completed."
