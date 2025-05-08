@@ -15,10 +15,21 @@
         "arn:aws:s3:::${state_bucket_name}/terraform/state/*"
       ]
     },
+
     {
       "Sid": "AllowAllEC2",
       "Effect": "Allow",
       "Action": "ec2:*",
+      "Resource": "*"
+    },
+    {
+      "Sid": "AllowGetDynamodb",
+      "Effect": "Allow",
+      "Action": [
+        "dynamodb:GetItem",
+        "dynamodb:PutItem",
+        "dynamodb:DeleteItem",
+        "dynamodb:UpdateItem"], 
       "Resource": "*"
     },
     {
