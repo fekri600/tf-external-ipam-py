@@ -10,6 +10,7 @@ apply:
 	cd modules/backend_setup && terraform output -raw dynamodb_table_name > .backend_table
 	cd modules/backend_setup && terraform output -raw region > .backend_region
 	cd modules/backend_setup && echo "terraform/state/root.tfstate" > .key
+	
 
 	@echo "🛠️ Generating providers.tf..."
 	bash generate_provider_file.sh
