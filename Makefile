@@ -23,25 +23,23 @@ apply:
 		terraform init && \
 		( terraform workspace list | grep -q 'oidc' && terraform workspace select oidc || terraform workspace new oidc ) && \
 		terraform apply -auto-approve -var="state_bucket_name=$$BACKEND_BUCKET" && \
-		terraform output -raw github_trust_role_arn > .github_role
+		terraform output -raw TRUST_ROLE_GITHUB > .github_role
 
 	@echo "✅ Apply completed."
 
 
 delete:
-	
 	@echo "🗑️ Destroying GitHub OIDC pipeline infrastructure..."
+	BACKEND_BUCKET=$$(cat modules/backend_setup/.backend_bucket)
 	cd modules/oidc && \
 		terraform init && \
 		( terraform workspace list | grep -q 'oidc' && terraform workspace select oidc || terraform workspace new oidc ) && \
-		terraform destroy -auto-approve
+		terraform destroy -auto-approve -var="state_bucket_name=$$BACKEND_BUCKET"
 
-	
 	@echo "🗑️ Destroying backend infrastructure..."
 	cd modules/backend_setup && terraform destroy -auto-approve
 
 	@echo "🧹 Cleaning up generated files..."
 	rm -f modules/backend_setup/.backend_bucket modules/backend_setup/.backend_table modules/backend_setup/.backend_region modules/backend_setup/.key modules/oidc/.github_role
-
 
 	@echo "✅ Delete completed."

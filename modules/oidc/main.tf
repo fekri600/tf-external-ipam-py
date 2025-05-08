@@ -17,7 +17,7 @@ resource "aws_iam_openid_connect_provider" "github" {
 
 # Define the IAM role GitHub Actions can assume using OIDC
 resource "aws_iam_role" "github_trust_role" {
-  name = "GitHubTrustRole"
+  name = "TRUST_ROLE_GITHUB"
 
   assume_role_policy = templatefile("${path.module}/policies/trust-policy.json", {
     oidc_provider_arn = local.oidc_provider_arn
@@ -26,7 +26,7 @@ resource "aws_iam_role" "github_trust_role" {
 
 # Define the IAM policy with necessary permissions
 resource "aws_iam_policy" "github_devops_policy" {
-  name   = "GitHubDevOpsDeployPolicy"
+  name   = "github_permission_policy"
   policy = templatefile("${path.module}/policies/permission-policy.json", {
     state_bucket_name = var.state_bucket_name
   })
