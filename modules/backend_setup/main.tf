@@ -1,47 +1,42 @@
 
 
 resource "aws_s3_bucket" "terraform_state" {
-  bucket = "nginx-backend-rsm"
+  bucket = var.state_bucket_name
 
   versioning {
-    enabled = true
+    enabled = var.state_bucket_versioning_enabled
   }
 
   server_side_encryption_configuration {
     rule {
       apply_server_side_encryption_by_default {
-        sse_algorithm = "AES256"
+        sse_algorithm = var.state_bucket_sse_algorithm
       }
     }
   }
 
-  tags = {
-    Name        = "Terraform Remote state management Bucket"
-    Environment = "backend remote state management"
-  }
+  tags = var.state_bucket_tags
 }
+
 
 resource "aws_s3_bucket_public_access_block" "terraform_state" {
-  bucket = aws_s3_bucket.terraform_state.id
-
-  block_public_acls       = true
-  block_public_policy     = true
-  ignore_public_acls      = true
-  restrict_public_buckets = true
+  bucket                  = aws_s3_bucket.terraform_state.id
+  block_public_acls       = var.block_public_acls
+  block_public_policy     = var.block_public_policy
+  ignore_public_acls      = var.ignore_public_acls
+  restrict_public_buckets = var.restrict_public_buckets
 }
 
+
 resource "aws_dynamodb_table" "terraform_locks" {
-  name         = "backend-d-db-table"
-  billing_mode = "PAY_PER_REQUEST"
-  hash_key     = "LockID"
+  name         = var.dynamodb_table_name
+  billing_mode = var.dynamodb_billing_mode
+  hash_key     = var.dynamodb_hash_key
 
   attribute {
-    name = "LockID"
-    type = "S"
+    name = var.dynamodb_hash_key
+    type = var.dynamodb_attribute_type
   }
 
-  tags = {
-    Name        = "Terraform Locks Table"
-    Environment = "backend remote state management"
-  }
-} 
+  tags = var.dynamodb_table_tags
+}

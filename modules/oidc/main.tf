@@ -3,46 +3,42 @@
 data "aws_caller_identity" "current" {}
 
 # Build the OIDC provider ARN dynamically
-module "backend_setup" {
-  source = "../backend_setup"
-}
+
+
 
 locals {
-  state_bucket_name = module.backend_setup.bucket_name
+  
   oidc_provider_arn = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:oidc-provider/token.actions.githubusercontent.com"
 }
 
 
-# locals {
-#   oidc_provider_arn = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:oidc-provider/token.actions.githubusercontent.com"
-#   state_bucket_name = trim(file("${path.module}/../modules/backend_setup/.backend_bucket"), "\n")
-
-# }
-
 
 # Define the GitHub OIDC provider in AWS (if not already set up)
 resource "aws_iam_openid_connect_provider" "github" {
-  url             = "https://token.actions.githubusercontent.com"
-  client_id_list  = ["sts.amazonaws.com"]
-  thumbprint_list = ["6938fd4d98bab03faadb97b34396831e3780aea1"]
+  url             = var.oidc_url
+  client_id_list  = var.oidc_client_id_list
+  thumbprint_list = var.oidc_thumbprint_list
 }
+
 
 # Define the IAM role GitHub Actions can assume using OIDC
 resource "aws_iam_role" "github_trust_role" {
-  name = "TRUST_ROLE_GITHUB"
+  name = var.iam_role_name
 
   assume_role_policy = templatefile("${path.module}/policies/trust-policy.json", {
     oidc_provider_arn = local.oidc_provider_arn
   })
 }
 
+
 # Define the IAM policy with necessary permissions
 resource "aws_iam_policy" "github_devops_policy" {
-  name   = "github_permission_policy"
+  name   = var.iam_policy_name
   policy = templatefile("${path.module}/policies/permission-policy.json", {
-    state_bucket_name = local.state_bucket_name
+    state_bucket_name = var.state_bucket_name
   })
 }
+
 
 # Attach the policy to the IAM role
 resource "aws_iam_role_policy_attachment" "github_actions_permissions" {
