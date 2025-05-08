@@ -3,21 +3,14 @@
 data "aws_caller_identity" "current" {}
 
 # Build the OIDC provider ARN dynamically
-module "backend_setup" {
-  source = "../backend_setup"
-}
+
+
 
 locals {
-  state_bucket_name = module.backend_setup.bucket_name
   oidc_provider_arn = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:oidc-provider/token.actions.githubusercontent.com"
+  
+
 }
-
-
-# locals {
-#   oidc_provider_arn = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:oidc-provider/token.actions.githubusercontent.com"
-#   state_bucket_name = trim(file("${path.module}/../modules/backend_setup/.backend_bucket"), "\n")
-
-# }
 
 
 # Define the GitHub OIDC provider in AWS (if not already set up)
@@ -40,7 +33,7 @@ resource "aws_iam_role" "github_trust_role" {
 resource "aws_iam_policy" "github_devops_policy" {
   name   = "github_permission_policy"
   policy = templatefile("${path.module}/policies/permission-policy.json", {
-    state_bucket_name = local.state_bucket_name
+    state_bucket_name = var.state_bucket_name
   })
 }
 

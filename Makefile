@@ -16,7 +16,7 @@ apply:
 	bash generate_provider_file.sh
 
 	@echo "📄 Copying providers.tf to modules/oidc..."
-	cp providers.tf modules/oidc/providers.tf
+	#cp providers.tf modules/oidc/providers.tf
 
 	@echo "🚀 Deploying GitHub OIDC pipeline..."
 	BACKEND_BUCKET=$$(cat modules/backend_setup/.backend_bucket)
