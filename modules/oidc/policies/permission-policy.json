@@ -11,7 +11,7 @@
         ],
         "Resource": [
           "arn:aws:s3:::${state_bucket_name}",
-          "arn:aws:s3:::${state_bucket_name}/tfstate/*"
+          "arn:aws:s3:::${state_bucket_name}/terraform/state/*"
         ]
       },
       {
