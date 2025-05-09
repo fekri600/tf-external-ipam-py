@@ -28,7 +28,15 @@ apply:
 
 
 	@echo "✅ Apply completed."
+oidc:
 
+	@echo "🚀 Deploying GitHub OIDC pipeline..."
+	@BACKEND_BUCKET=$$(cat modules/backend_setup/.backend_bucket); \
+	cd modules/oidc && \
+	terraform init && \
+	( terraform workspace list | grep -q 'oidc' && terraform workspace select oidc || terraform workspace new oidc ) && \
+	terraform apply -auto-approve -var="state_bucket_name=$$BACKEND_BUCKET" && \
+	terraform output -raw TRUST_ROLE_GITHUB > .github_role
 
 delete:
 	@echo "🗑️ Destroying GitHub OIDC pipeline infrastructure..."
