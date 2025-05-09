@@ -5,7 +5,7 @@ variable "state_bucket_name" {
 
 variable "state_bucket_versioning_enabled" {
   description = "Enable versioning on S3 bucket"
-  type        = bool
+  type        = string
 }
 
 variable "state_bucket_sse_algorithm" {

@@ -1,6 +1,6 @@
 # ---- S3 Bucket Configuration ----
-state_bucket_name               = "nginx-backend-rsm"
-state_bucket_versioning_enabled = true
+state_bucket_name               = "backend-s3-bucket-1290"
+state_bucket_versioning_enabled = "Enabled"
 state_bucket_sse_algorithm      = "AES256"
 public_access_block_config = {
   block_public_acls       = true

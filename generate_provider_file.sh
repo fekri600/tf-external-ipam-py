@@ -1,9 +1,9 @@
 #!/bin/bash
 
-bucket=$(cat modules/backend_setup/.backend_bucket)
-dynamodb_table=$(cat modules/backend_setup/.backend_table)
-region=$(cat modules/backend_setup/.backend_region)
-key=$(cat modules/backend_setup/.key)
+bucket=$(cat bootstrap/outputs/.backend_bucket)
+dynamodb_table=$(cat bootstrap/outputs/.backend_table)
+region=$(cat bootstrap/outputs/.backend_region)
+key=$(cat bootstrap/outputs/.key)
 
 
 

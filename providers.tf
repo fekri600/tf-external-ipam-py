@@ -9,7 +9,7 @@ terraform {
   }
 
   backend "s3" {
-    bucket         = "nginx-backend-rsm"
+    bucket         = "backend-s3-bucket-1290"
     key            = "terraform/state/root.tfstate"
     region         = "us-east-1"
     dynamodb_table = "backend-d-db-table"

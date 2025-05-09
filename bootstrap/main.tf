@@ -1,5 +1,5 @@
 module "backend_setup" {
-  source = "../modules/backend_setup"
+  source = "./backend_setup"
 
   state_bucket_name               = var.state_bucket_name
   state_bucket_versioning_enabled = var.state_bucket_versioning_enabled
@@ -21,7 +21,7 @@ module "backend_setup" {
 
 
 module "oidc" {
-  source = "../modules/oidc"
+  source = "./oidc"
 
   # Pass backend_setup output as input
   state_bucket_name = module.backend_setup.bucket_name
