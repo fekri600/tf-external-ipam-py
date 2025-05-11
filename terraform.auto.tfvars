@@ -29,23 +29,40 @@ lb_health_check = {
 }
 
 alb_settings = {
-  internal                  = false
+  internal                   = false
   enable_deletion_protection = false
 }
 
 listener_settings = {
-  port     = 80
-  protocol = "HTTP"
+  port        = 80
+  protocol    = "HTTP"
   action_type = "forward"
 }
 
 
 
 alert_email = "alerts@example.com"
-db_engine   = "mysql"
+db_engine   = "mysql" # TODO I guess we have aproblem here
 
-stag_instance_type         = "t3.micro"
-stag_ami_id                = "ami-0abcd1234abcd1234"
+stag_instance_type = "t3.micro"
+
+autoscaling_settings = {
+  desired_capacity          = 2
+  max_size                  = 2
+  min_size                  = 2
+  health_check_type         = "EC2"
+  health_check_grace_period = 60
+  version                   = "$Latest"
+  propagate_at_launch       = true
+}
+
+redis_settings = {
+  engine             = "redis"
+  num_cache_clusters = 1
+}
+
+
+
 stag_db_instance_class     = "db.t3.micro"
 stag_db_init_storage       = 20
 stag_db_username           = "staging_user"

@@ -16,7 +16,7 @@ apply:
 	cd bootstrap && terraform output -raw TRUST_ROLE_GITHUB > outputs/.github_role
 
 	@echo "🛠️ Generating providers.tf..."
-	bash generate_provider_file.sh
+	bash scripts/generate_provider_file.sh
 
 	@echo "✅ Apply completed."
 

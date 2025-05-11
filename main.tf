@@ -13,10 +13,10 @@ module "network" {
   availability_zones       = var.availability_zones
   eip_domain               = var.eip_domain
   default_route_cidr_block = var.default_route_cidr_block
-  lb_target_group  = var.lb_target_group
-  lb_health_check  = var.lb_health_check
-  alb_settings = var.alb_settings 
-  listener_settings = var.listener_settings 
+  lb_target_group          = var.lb_target_group
+  lb_health_check          = var.lb_health_check
+  alb_settings             = var.alb_settings
+  listener_settings        = var.listener_settings
 
 
 
@@ -27,36 +27,39 @@ module "security" {
   prefix      = local.name_prefix
   environment = "security"
   vpc_id      = module.network.vpc_id
-  depends_on = [module.network]
-  
+  depends_on  = [module.network]
+
 }
 
 
 module "staging" {
-  source                  = "./modules/environment"
-  environment             = "staging"
-  prefix                  = local.name_prefix
-  instance_type           = var.stag_instance_type
-  security_group_id       = module.network.ec2_security_group_id
-  redis_security_group_id = module.network.redis_security_group_id
-  arch                    = local.arch
-
-  private_subnet_ids = module.network.private_subnet_ids
+  source               = "./modules/environment"
+  environment          = "staging"
+  prefix               = local.name_prefix
+  ami                  = local.ami
+  policies_path        = local.policies
+  instance_type        = var.stag_instance_type
+  security_group_id    = module.security.ce2_security_group_id
+  scripts_path         = local.scripts
+  autoscaling_settings = var.autoscaling_settings
   target_group_arn   = module.network.target_group_arn
+  private_subnet_ids = module.network.private_subnet_ids
 
   db_engine               = var.db_engine
   db_instance_class       = var.stag_db_instance_class
   db_storage              = var.stag_db_init_storage
   db_username             = var.stag_db_username
   db_password             = var.stag_db_password
-  db_security_group_ids   = [module.network.db_security_group_id]
-  rds_subnet_group_name   = module.network.rds_subnet_group_name
-  redis_subnet_group_name = module.network.redis_subnet_group_name
-
+  db_security_group_ids   = [module.security.db_security_group_id]
   db_delete_snapshot    = var.stag_db_delete_snapshot
   db_multi_az           = var.stag_db_multi_az
   db_iam_authentication = var.stag_db_iam_authentication
 
+
+  redis_settings = var.redis_settings 
+  redis_security_group_id = module.security.redis_security_group_id
+  rds_subnet_group_name   = module.network.rds_subnet_group_name
+  redis_subnet_group_name = module.network.redis_subnet_group_name
   redis_node_type = var.stag_redis_node_type
 
   depends_on = [

@@ -1,4 +1,8 @@
 # modules/environment/variables.tf
+variable "ami" {
+  description = "The architecture type (e.g., x86_64)"
+  type        = string
+}
 variable "environment" {
   description = "The environment name (e.g., dev, staging, prod)"
   type        = string
@@ -8,6 +12,38 @@ variable "prefix" {
   description = "The prefix to use for resource names"
   type        = string
 }
+
+variable "policies_path" {
+  description = "Base path to IAM policy JSON files"
+  type        = string
+}
+variable "scripts_path" {
+  description = "base path to scripts files"
+  type = string
+  
+}
+
+variable "autoscaling_settings" {
+  description = "Auto Scaling Group configuration"
+  type = object({
+    desired_capacity          = number
+    max_size                  = number
+    min_size                  = number
+    health_check_type         = string
+    health_check_grace_period = number
+    version                   = string
+    propagate_at_launch       = bool
+  })
+}
+
+variable "redis_settings" {
+  description = "Redis engine settings"
+  type = object({
+    engine             = string
+    num_cache_clusters = number
+  })
+}
+
 
 variable "private_subnet_ids" {
   description = "List of private subnet IDs"
@@ -34,10 +70,7 @@ variable "target_group_arn" {
   type        = string
 }
 
-variable "arch" {
-  description = "The architecture type (e.g., x86_64)"
-  type        = string
-}
+
 
 variable "db_engine" {
   description = "The database engine to use (e.g., mysql, postgres)"

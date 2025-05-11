@@ -75,7 +75,7 @@ variable "lb_health_check" {
 variable "alb_settings" {
   description = "Settings for the ALB"
   type = object({
-    internal                  = bool
+    internal                   = bool
     enable_deletion_protection = bool
   })
 }
@@ -89,7 +89,28 @@ variable "listener_settings" {
   })
 }
 
-  
+
+variable "autoscaling_settings" {
+  description = "Auto Scaling Group configuration"
+  type = object({
+    desired_capacity          = number
+    max_size                  = number
+    min_size                  = number
+    health_check_type         = string
+    health_check_grace_period = number
+    version                   = string
+    propagate_at_launch       = bool
+  })
+}
+
+variable "redis_settings" {
+  description = "Redis engine settings"
+  type = object({
+    engine             = string
+    num_cache_clusters = number
+  })
+}
+
 
 
 
