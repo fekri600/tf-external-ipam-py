@@ -1,12 +1,48 @@
-environment        = "network"
-project            = "nginx"
-aws_region         = "us-east-1"
-vpc_cidr           = "10.0.0.0/16"
-public_subnets     = ["10.0.1.0/24", "10.0.2.0/24"]
-private_subnets    = ["10.0.11.0/24", "10.0.12.0/24"]
-availability_zones = ["us-east-1a", "us-east-1b"]
-alert_email        = "alerts@example.com"
-db_engine          = "mysql"
+
+project    = "nginx"
+aws_region = "us-east-1"
+
+
+# Network variables 
+enable_dns_support   = true
+enable_dns_hostnames = true
+
+vpc_cidr                 = "10.0.0.0/16"
+public_subnets           = ["10.0.1.0/24", "10.0.2.0/24"]
+private_subnets          = ["10.0.11.0/24", "10.0.12.0/24"]
+availability_zones       = ["us-east-1a", "us-east-1b"]
+eip_domain               = "vpc"
+default_route_cidr_block = "0.0.0.0/0"
+
+lb_target_group = {
+  port     = 80
+  protocol = "HTTP"
+}
+
+lb_health_check = {
+  path                = "/"
+  interval            = 30
+  timeout             = 5
+  healthy_threshold   = 2
+  unhealthy_threshold = 2
+  matcher             = "200-399"
+}
+
+alb_settings = {
+  internal                  = false
+  enable_deletion_protection = false
+}
+
+listener_settings = {
+  port     = 80
+  protocol = "HTTP"
+  action_type = "forward"
+}
+
+
+
+alert_email = "alerts@example.com"
+db_engine   = "mysql"
 
 stag_instance_type         = "t3.micro"
 stag_ami_id                = "ami-0abcd1234abcd1234"

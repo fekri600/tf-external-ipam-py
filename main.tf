@@ -1,13 +1,36 @@
 module "network" {
-  source             = "./modules/network"
-  environment        = "network"
-  aws_region         = var.aws_region
-  prefix             = local.name_prefix
-  vpc_cidr           = var.vpc_cidr
-  public_subnets     = var.public_subnets
-  private_subnets    = var.private_subnets
-  availability_zones = var.availability_zones
+  source      = "./modules/network"
+  environment = "network"
+  aws_region  = var.aws_region
+  prefix      = local.name_prefix
+
+  enable_dns_support   = var.enable_dns_support
+  enable_dns_hostnames = var.enable_dns_hostnames
+
+  vpc_cidr                 = var.vpc_cidr
+  public_subnets           = var.public_subnets
+  private_subnets          = var.private_subnets
+  availability_zones       = var.availability_zones
+  eip_domain               = var.eip_domain
+  default_route_cidr_block = var.default_route_cidr_block
+  lb_target_group  = var.lb_target_group
+  lb_health_check  = var.lb_health_check
+  alb_settings = var.alb_settings 
+  listener_settings = var.listener_settings 
+
+
+
 }
+
+module "security" {
+  source      = "./modules/security"
+  prefix      = local.name_prefix
+  environment = "security"
+  vpc_id      = module.network.vpc_id
+  depends_on = [module.network]
+  
+}
+
 
 module "staging" {
   source                  = "./modules/environment"
@@ -36,7 +59,10 @@ module "staging" {
 
   redis_node_type = var.stag_redis_node_type
 
-  depends_on = [module.network]
+  depends_on = [
+    module.network,
+    module.security
+  ]
 }
 
 module "production" {
@@ -66,7 +92,10 @@ module "production" {
 
   redis_node_type = var.prod_redis_node_type
 
-  depends_on = [module.network]
+  depends_on = [
+    module.network,
+    module.security
+  ]
 }
 
 module "cloudwatch" {
@@ -89,6 +118,7 @@ module "cloudwatch" {
 
   depends_on = [
     module.network,
+    module.security,
     module.staging,
     module.production,
   ]
