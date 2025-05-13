@@ -1,219 +1,199 @@
-# variables.tf
-variable "project" {
-  description = "The name of the project"
-  type        = string
-}
-
-variable "aws_region" {
-  description = "The AWS region where resources will be created"
-  type        = string
-}
-
-
-# network variables
-variable "enable_dns_support" {
-  description = "Enable DNS support in the VPC"
-  type        = bool
-}
-
-variable "enable_dns_hostnames" {
-  description = "Enable DNS hostnames in the VPC"
-  type        = bool
-}
-
-
-variable "vpc_cidr" {
-  description = "The CIDR block for the VPC"
-  type        = string
-}
-
-variable "public_subnets" {
-  description = "List of CIDR blocks for public subnets"
-  type        = list(string)
-}
-
-variable "private_subnets" {
-  description = "List of CIDR blocks for private subnets"
-  type        = list(string)
-}
-
-variable "availability_zones" {
-  description = "List of availability zones to use"
-  type        = list(string)
-}
-
-variable "eip_domain" {
-  description = "The domain for the Elastic IP"
-  type        = string
-}
-
-variable "default_route_cidr_block" {
-  description = "CIDR block used for default route entries in route tables"
-  type        = string
-}
-
-variable "lb_target_group" {
-  description = "Target group settings"
+# ======================
+# Project Configuration
+# ======================
+variable "project_settings" {
+  description = "Project and region configuration"
   type = object({
-    port     = number
-    protocol = string
-  })
-}
-
-variable "lb_health_check" {
-  description = "Health check configuration"
-  type = object({
-    path                = string
-    interval            = number
-    timeout             = number
-    healthy_threshold   = number
-    unhealthy_threshold = number
-    matcher             = string
-  })
-}
-
-variable "alb_settings" {
-  description = "Settings for the ALB"
-  type = object({
-    internal                   = bool
-    enable_deletion_protection = bool
-  })
-}
-
-variable "listener_settings" {
-  description = "Listener settings including port, protocol, and default action type"
-  type = object({
-    port        = number
-    protocol    = string
-    action_type = string
+    project    = string
+    aws_region = string
   })
 }
 
 
-variable "autoscaling_settings" {
-  description = "Auto Scaling Group configuration"
+# ======================
+# Network Configuration
+# ======================
+variable "network" {
+  description = "VPC and subnet configuration"
   type = object({
-    desired_capacity          = number
-    max_size                  = number
-    min_size                  = number
-    health_check_type         = string
-    health_check_grace_period = number
-    version                   = string
-    propagate_at_launch       = bool
+    enable_dns_support       = bool
+    enable_dns_hostnames     = bool
+    vpc_cidr                 = string
+    public_subnets           = list(string)
+    private_subnets          = list(string)
+    availability_zones       = list(string)
+    eip_domain               = string
+    default_route_cidr_block = string
   })
 }
 
-variable "redis_settings" {
-  description = "Redis engine settings"
+# ==========================
+# Securty Groups Configuration
+# ==========================
+variable "security_groups" {
+  description = "Security Groups configuration: ports and protocols"
   type = object({
-    engine             = string
-    num_cache_clusters = number
+    port = object({
+      http  = number
+      https = number
+      mysql = number
+      redis = number
+      any   = number
+    })
+    protocol = object({
+      tcp = string
+      any = string
+    })
   })
 }
 
 
 
+# ==========================
+# Load Balancer Configuration
+# ==========================
+variable "load_balancer" {
+  description = "ALB settings, listener, target group and health check"
+  type = object({
+    alb_settings = object({
+      internal                   = bool
+      enable_deletion_protection = bool
+      load_balancer_type         = string
+    })
 
-variable "alert_email" {
-  description = "Email address for receiving alerts"
-  type        = string
+    lb_target_group = object({
+      port     = number
+      protocol = string
+    })
+
+    lb_health_check = object({
+      path                = string
+      interval            = number
+      timeout             = number
+      healthy_threshold   = number
+      unhealthy_threshold = number
+      matcher             = string
+    })
+
+    listener = object({
+      port        = number
+      protocol    = string
+      action_type = string
+    })
+  })
+}
+# ==========================
+# Launch Template Variable
+# ==========================
+variable "launch_template" {
+  description = "Launch template configuration for staging and production"
+  type = object({
+    staging = object({
+      architecture  = string
+      storage       = string
+      instance_type = string
+    })
+    production = object({
+      architecture  = string
+      storage       = string
+      instance_type = string
+    })
+  })
 }
 
-variable "db_engine" {
-  description = "The database engine to use (e.g., mysql, postgres)"
-  type        = string
+# ==========================
+# Auto Scaling Configuration
+# ==========================
+variable "autoscaling" {
+  description = "Auto Scaling configuration for staging and production"
+  type = object({
+    staging = object({
+      desired_capacity          = number
+      max_size                  = number
+      min_size                  = number
+      health_check_type         = string
+      health_check_grace_period = number
+      version                   = string
+      propagate_at_launch       = bool
+    })
+    production = object({
+      desired_capacity          = number
+      max_size                  = number
+      min_size                  = number
+      health_check_type         = string
+      health_check_grace_period = number
+      version                   = string
+      propagate_at_launch       = bool
+    })
+  })
 }
 
-# Staging environment variables
-variable "stag_instance_type" {
-  description = "EC2 instance type for staging environment"
-  type        = string
+
+# ====================
+# Database Settings
+# ====================
+variable "database" {
+  description = "RDS instance settings for staging and production"
+  type = object({
+    staging = object({
+      engine                  = string
+      instance_class          = string
+      initial_storage         = number
+      username                = string
+      password                = string
+      delete_automated_backup = bool
+      iam_authentication      = bool
+      multi_az                = bool
+    })
+    production = object({
+      engine                  = string
+      instance_class          = string
+      initial_storage         = number
+      username                = string
+      password                = string
+      delete_automated_backup = bool
+      iam_authentication      = bool
+      multi_az                = bool
+    })
+  })
+  sensitive = true
 }
 
-variable "stag_ami_id" { type = string }
-variable "stag_db_instance_class" {
-  description = "RDS instance class for staging environment"
-  type        = string
+
+
+# ====================
+# Redis Configuration
+# ====================
+variable "redis" {
+  description = "ElastiCache Redis configuration for staging and production"
+  type = object({
+    staging = object({
+      node_type = string
+      redis_settings = object({
+        engine             = string
+        num_cache_clusters = number
+      })
+    })
+    production = object({
+      node_type = string
+      redis_settings = object({
+        engine             = string
+        num_cache_clusters = number
+      })
+    })
+  })
 }
 
-variable "stag_db_init_storage" {
-  description = "Initial storage size in GB for staging RDS instance"
-  type        = number
+
+
+# ====================
+# Alerting
+# ====================
+variable "alerting" {
+  description = "Alerting configuration"
+  type = object({
+    alert_email = string
+  })
 }
 
-variable "stag_db_username" {
-  description = "Master username for staging RDS instance"
-  type        = string
-}
 
-variable "stag_db_password" {
-  description = "Master password for staging RDS instance"
-  type        = string
-}
-
-variable "stag_db_delete_snapshot" {
-  description = "Whether to skip creating a final snapshot when destroying the staging RDS instance"
-  type        = bool
-}
-
-variable "stag_db_multi_az" {
-  description = "Whether to enable multi-AZ deployment for staging RDS instance"
-  type        = bool
-}
-
-variable "stag_db_iam_authentication" {
-  description = "Whether to enable IAM database authentication for staging RDS instance"
-  type        = bool
-}
-
-variable "stag_redis_node_type" {
-  description = "ElastiCache node type for staging environment"
-  type        = string
-}
-
-# Production environment variables
-variable "prod_instance_type" {
-  description = "EC2 instance type for production environment"
-  type        = string
-}
-
-variable "prod_ami_id" { type = string }
-variable "prod_db_instance_class" {
-  description = "RDS instance class for production environment"
-  type        = string
-}
-
-variable "prod_db_init_storage" {
-  description = "Initial storage size in GB for production RDS instance"
-  type        = number
-}
-
-variable "prod_db_username" {
-  description = "Master username for production RDS instance"
-  type        = string
-}
-
-variable "prod_db_password" {
-  description = "Master password for production RDS instance"
-  type        = string
-}
-
-variable "prod_db_delete_snapshot" {
-  description = "Whether to skip creating a final snapshot when destroying the production RDS instance"
-  type        = bool
-}
-
-variable "prod_db_multi_az" {
-  description = "Whether to enable multi-AZ deployment for production RDS instance"
-  type        = bool
-}
-
-variable "prod_db_iam_authentication" {
-  description = "Whether to enable IAM database authentication for production RDS instance"
-  type        = bool
-}
-
-variable "prod_redis_node_type" {
-  description = "ElastiCache node type for production environment"
-  type        = string
-}

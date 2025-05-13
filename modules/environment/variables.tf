@@ -1,8 +1,5 @@
 # modules/environment/variables.tf
-variable "ami" {
-  description = "The architecture type (e.g., x86_64)"
-  type        = string
-}
+
 variable "environment" {
   description = "The environment name (e.g., dev, staging, prod)"
   type        = string
@@ -23,8 +20,18 @@ variable "scripts_path" {
   
 }
 
-variable "autoscaling_settings" {
-  description = "Auto Scaling Group configuration"
+
+variable "launch_template" {
+  description = "Launch template configuration"
+  type = object({
+    architecture   = string
+    storage        = string
+    instance_type  = string
+  })
+}
+
+variable "autoscaling" {
+  description = "EC2 instance type and auto scaling group settings"
   type = object({
     desired_capacity          = number
     max_size                  = number
@@ -35,14 +42,32 @@ variable "autoscaling_settings" {
     propagate_at_launch       = bool
   })
 }
-
-variable "redis_settings" {
-  description = "Redis engine settings"
+variable "database" {
+  description = "RDS instance settings for staging and production"
   type = object({
-    engine             = string
-    num_cache_clusters = number
+    engine                   = string
+    instance_class           = string
+    initial_storage          = number
+    username                 = string
+    password                 = string
+    delete_automated_backup = bool
+    iam_authentication      = bool
+    multi_az                = bool
+  })
+  sensitive = true
+}
+
+variable "redis" {
+  description = "ElastiCache Redis configuration"
+  type = object({
+    node_type = string
+    redis_settings = object({
+      engine             = string
+      num_cache_clusters = number
+    })
   })
 }
+
 
 
 variable "private_subnet_ids" {
@@ -50,7 +75,7 @@ variable "private_subnet_ids" {
   type        = list(string)
 }
 
-variable "security_group_id" {
+variable "ec2_security_group_id" {
   description = "The ID of the EC2 security group to use"
   type        = string
 }
@@ -60,10 +85,7 @@ variable "redis_security_group_id" {
   type        = string
 }
 
-variable "instance_type" {
-  description = "The EC2 instance type"
-  type        = string
-}
+
 
 variable "target_group_arn" {
   description = "The ARN of the target group"
@@ -72,50 +94,13 @@ variable "target_group_arn" {
 
 
 
-variable "db_engine" {
-  description = "The database engine to use (e.g., mysql, postgres)"
-  type        = string
-}
-
-variable "db_instance_class" {
-  description = "The RDS instance class"
-  type        = string
-}
-
-variable "db_storage" {
-  description = "The initial storage size in GB for RDS instance"
-  type        = number
-}
-
-variable "db_username" {
-  description = "The master username for RDS instance"
-  type        = string
-}
-
-variable "db_password" {
-  description = "The master password for RDS instance"
-  type        = string
-}
-
-variable "db_delete_snapshot" {
-  description = "Whether to skip creating a final snapshot when destroying the RDS instance"
-  type        = bool
-}
-
 variable "db_security_group_ids" {
   description = "List of security group IDs for RDS instance"
   type        = list(string)
 }
 
-variable "db_multi_az" {
-  description = "Whether to enable multi-AZ deployment for RDS instance"
-  type        = bool
-}
 
-variable "db_iam_authentication" {
-  description = "Whether to enable IAM database authentication for RDS instance"
-  type        = bool
-}
+
 
 variable "rds_subnet_group_name" {
   description = "The name of the RDS subnet group"
@@ -127,7 +112,3 @@ variable "redis_subnet_group_name" {
   type        = string
 }
 
-variable "redis_node_type" {
-  description = "The ElastiCache node type"
-  type        = string
-}
