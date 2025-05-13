@@ -181,14 +181,64 @@ redis = {
 }
 
 
+# ====================
+# Alarm Configuration
+# ====================
+alarm = {
+  namespace = {
+    ec2   = "AWS/EC2"
+    rds   = "AWS/RDS"
+    redis = "AWS/ElastiCache"
+  }
+
+  metric = {
+    cpu         = "CPUUtilization"
+    ram         = "MemoryUtilization"
+    disk_read   = "DiskReadOps"
+    disk_write  = "DiskWriteOps"
+    nic_in      = "NetworkIn"
+    nic_out     = "NetworkOut"
+    free_space  = "FreeStorageSpace"
+    free_memory = "FreeableMemory"
+    replica     = "ReplicaLag"
+    eviction    = "Evictions"
+  }
+
+  threshold = {
+    cpu         = 80             # % utilization
+    ram         = 80             # % utilization
+    disk_read   = 1000           # IOPS (operations per second)
+    disk_write  = 1000           # IOPS (operations per second)
+    nic_in      = 50000000       # Bytes (approx. 47.7 MB)
+    nic_out     = 50000000       # Bytes (approx. 47.7 MB)
+    free_space  = 20000000000    # Bytes (~20 GB remaining)
+    free_memory = 500000000      # Bytes (~476 MB remaining)
+    replica     = 60             # Seconds of replication lag
+    eviction    = 100            # Count of evictions
+  }
+
+  dim = {
+    ec2   = "AutoScalingGroupName"
+    rds   = "DBInstanceIdentifier"
+    redis = "CacheClusterId"
+  }
+
+  attr = {
+    ec2   = "asg_name"
+    rds   = "rds_id"
+    redis = "redis_id"
+  }
+  common_settings = {
+    comparison_operator = "GreaterThanThreshold"
+    evaluation_periods  = 2     # Number of consecutive periods the metric must breach the threshold to trigger the alarm
+    period              = 300   # Period in seconds over which the metric is evaluated (e.g., 300 = 5 minutes)
+    statistic           = "Average"
+  }
+}
 
 # ====================
-# Alerting
+# Alerting Configuration
 # ====================
 alerting = {
   alert_email = "alerts@example.com"
 }
-
-
-
-

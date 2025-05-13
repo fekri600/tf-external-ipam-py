@@ -18,3 +18,20 @@ variable "env_configs" {
     redis_id = string
   }))
 }
+variable "alarm" {
+  type = object({
+    namespace = map(string)
+    metric    = map(string)
+    threshold = map(number)
+    dim       = map(string)
+    attr      = map(string)
+    common_settings = object({
+      comparison_operator = string
+      evaluation_periods  = number
+      period              = number
+      statistic           = string
+    })
+  })
+}
+
+

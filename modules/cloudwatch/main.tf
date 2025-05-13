@@ -4,6 +4,7 @@ module "alarms" {
   aws_region  = var.aws_region
   alert_email = var.alert_email
   env_configs = var.env_configs
+  alarm = var.alarm
 }
 
 module "dashboards" {
