@@ -1,5 +1,7 @@
 # modules/environment/main.tf
-
+data "aws_ssm_parameter" "ami" {
+  name = "/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-${var.launch_template.architecture}-${var.launch_template.storage}"
+}
 resource "aws_iam_role" "ec2_role" {
   name               = "${var.prefix}-${var.environment}-ec2-role"
   assume_role_policy = file("${var.policies_path}/ec2_assume_role_policy.json")
@@ -19,7 +21,8 @@ resource "aws_iam_instance_profile" "ec2_profile" {
 # 1. Launch Template
 resource "aws_launch_template" "this" {
   name_prefix            = "${var.prefix}-${var.environment}-lt-"
-  image_id               = "/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-${var.launch_template.architecture}-${var.launch_template.storage}"
+  image_id               =  data.aws_ssm_parameter.ami.value
+
   instance_type          = var.launch_template.instance_type
   vpc_security_group_ids = [var.ec2_security_group_id]
 
