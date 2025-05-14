@@ -199,6 +199,26 @@ variable "alarm" {
     })
   })
 }
+variable "logs" {
+  description = "CloudWatch log configuration for all services"
+  type = object({
+    retention_in_days  = number
+    log_group_prefix   = map(string)         
+    group_paths        = map(string)
+    filters = object({
+      name = map(string)
+      pattern = object({
+        error  = string
+        status = string
+      })
+      transformation = object({
+        name      = map(string)
+        namespace = string
+        value     = string
+      })
+    })
+  })
+}
 
 
 

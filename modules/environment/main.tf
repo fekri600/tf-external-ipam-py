@@ -31,7 +31,7 @@ resource "aws_launch_template" "this" {
   }
 
   user_data = base64encode(templatefile("${var.scripts_path}/user_data.sh.tmpl", {
-    log_group_prefix = "${var.prefix}-${var.environment}",
+    log_group_prefix = "${var.environment}",
   }))
 
   tag_specifications {

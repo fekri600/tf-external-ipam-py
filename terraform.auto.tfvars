@@ -192,29 +192,17 @@ alarm = {
   }
 
   metric = {
-    cpu         = "CPUUtilization"
-    ram         = "MemoryUtilization"
-    disk_read   = "DiskReadOps"
-    disk_write  = "DiskWriteOps"
-    nic_in      = "NetworkIn"
-    nic_out     = "NetworkOut"
-    free_space  = "FreeStorageSpace"
-    free_memory = "FreeableMemory"
-    replica     = "ReplicaLag"
-    eviction    = "Evictions"
+    cpu     = "CPUUtilization"
+    memory  = "FreeableMemory"
+    conn    = "DatabaseConnections"
+    redis_conn = "CurrConnections"
   }
 
   threshold = {
-    cpu         = 80             # % utilization
-    ram         = 80             # % utilization
-    disk_read   = 1000           # IOPS (operations per second)
-    disk_write  = 1000           # IOPS (operations per second)
-    nic_in      = 50000000       # Bytes (approx. 47.7 MB)
-    nic_out     = 50000000       # Bytes (approx. 47.7 MB)
-    free_space  = 20000000000    # Bytes (~20 GB remaining)
-    free_memory = 500000000      # Bytes (~476 MB remaining)
-    replica     = 60             # Seconds of replication lag
-    eviction    = 100            # Count of evictions
+    cpu     = 80
+    memory  = 200000000   # bytes
+    conn    = 100
+    redis_conn = 100
   }
 
   dim = {
@@ -228,6 +216,7 @@ alarm = {
     rds   = "rds_id"
     redis = "redis_id"
   }
+
   common_settings = {
     comparison_operator = "GreaterThanThreshold"
     evaluation_periods  = 2     # Number of consecutive periods the metric must breach the threshold to trigger the alarm
@@ -235,6 +224,50 @@ alarm = {
     statistic           = "Average"
   }
 }
+
+logs = {
+
+  retention_in_days = 7
+
+  log_group_prefix = {
+    staging    = "staging"
+    production = "production"
+  }
+
+  group_paths = {
+    application = "/aws/ec2/application"
+    nginx       = "/aws/ec2/nginx"
+    system      = "/aws/ec2/system"
+    rds         = "/aws/rds/mysql-logs"
+    redis       = "/aws/elasticache/redis-logs"
+  }
+
+  filters = {
+    name = {
+      app    = "application-errors"
+      nginx  = "nginx-5xx-errors"
+      rds    = "rds-errors"
+      redis  = "redis-errors"
+    }
+
+    pattern = {
+      error  = "ERROR"
+      status = "[status=5*]"
+    }
+
+    transformation = {
+      name = {
+        app    = "ApplicationErrorCount"
+        nginx  = "Nginx5xxErrorCount"
+        rds    = "RDSErrorCount"
+        redis  = "RedisErrorCount"
+      }
+      namespace = "LogMetrics"
+      value     = "1"
+    }
+  }
+}
+
 
 # ====================
 # Alerting Configuration
