@@ -9,10 +9,10 @@ locals {
         dim       = var.alarm.dim[service]
         attr      = var.alarm.attr[service]
       }
+      if contains(keys(var.alarm.dim), service)
+        && contains(keys(var.alarm.attr), service)
+        && contains(keys(var.alarm.threshold), metric_key)
     }
-    if contains(keys(var.alarm.dim), service)
-      && contains(keys(var.alarm.attr), service)
-      && contains(keys(var.alarm.threshold), metric_key)
   ]...)
 
   nested_log_groups = {
@@ -25,7 +25,37 @@ locals {
     }
   }
 
-  log_groups = merge(
-    values(local.nested_log_groups)...
-  )
+  # Flatten all environment-specific log groups into one map
+  log_groups = merge(values(local.nested_log_groups)...)
+
+  # Generate log metric filters for all defined log groups
+log_metric_filters = {
+  for key, lg in local.log_groups : key => {
+    log_group_name    = lg.full_name
+    pattern           = var.logs.filters.pattern.error
+    metric_name       = "${split("/", lg.full_name)[length(split("/", lg.full_name)) - 1]}-error"
+    metric_namespace  = var.logs.filters.transformation.namespace
+    metric_value      = var.logs.filters.transformation.value
+  }
 }
+
+# Build specs for the four log‑metric alarms in every environment
+log_alarm_specs = merge([
+  for env, prefix in var.logs.log_group_prefix : {
+    for name, metric in var.alarm.metric :
+    "${env}_${name}" => {
+      env         = env
+      alarm_name  = "${prefix}-${metric}"
+      metric_name = metric
+      threshold   = var.alarm.threshold[name]
+    }
+    if startswith(name, "nginx_")
+       || startswith(name, "rds_")
+       || startswith(name, "redis_")
+       || startswith(name, "app_")
+  }
+]...)
+
+}
+
+

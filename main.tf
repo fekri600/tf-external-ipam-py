@@ -65,11 +65,10 @@ module "production" {
 
 
 module "cloudwatch" {
-  source      = "./modules/cloudwatch"
-  aws_region  = var.project_settings.aws_region
-  alert_email = var.alerting.email
-  alarm = var.alarm
-  logs = var.logs
+  source     = "./modules/cloudwatch"
+  aws_region = var.project_settings.aws_region
+  alarm      = var.alarm
+  logs       = var.logs
   env_configs = {
     staging = {
       asg_name = module.staging.asg_name

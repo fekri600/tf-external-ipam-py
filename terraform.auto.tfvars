@@ -34,21 +34,21 @@ load_balancer = {
   }
 
   lb_target_group = {
-    port     = 80
+    port     = 80       # port number
     protocol = "HTTP"
   }
 
   lb_health_check = {
     path                = "/"
-    interval            = 30
-    timeout             = 5
-    healthy_threshold   = 2
-    unhealthy_threshold = 2
+    interval            = 30       # seconds
+    timeout             = 5        # seconds
+    healthy_threshold   = 2        # number of successful checks
+    unhealthy_threshold = 2        # number of failed checks
     matcher             = "200-399"
   }
 
   listener = {
-    port        = 80
+    port        = 80       # port number
     protocol    = "HTTP"
     action_type = "forward"
   }
@@ -59,17 +59,19 @@ load_balancer = {
 # ==========================
 security_groups = {
   port = {
-    http  = 80
-    https = 443
-    mysql = 3306
-    redis = 6379
-    any   = 0
+    http  = 80      # port number
+    https = 443     # port number
+    mysql = 3306    # port number
+    redis = 6379    # port number
+    any   = 0       # port number (all)
   }
   protocol = {
     tcp = "tcp"
     any = "-1"
   }
 }
+
+
 # ==========================
 # Launch Template Configuration
 # 
@@ -109,21 +111,21 @@ launch_template = {
 # ==========================
 autoscaling = {
   staging = {
-    desired_capacity          = 2
-    max_size                  = 2
-    min_size                  = 2
+    desired_capacity          = 2         # number of instances
+    max_size                  = 2         # number of instances
+    min_size                  = 2         # number of instances
     health_check_type         = "EC2"
-    health_check_grace_period = 60
+    health_check_grace_period = 60        # seconds
     version                   = "$Latest"
     propagate_at_launch       = true
   }
 
   production = {
-    desired_capacity          = 3
-    max_size                  = 5
-    min_size                  = 2
+    desired_capacity          = 3         # number of instances
+    max_size                  = 5         # number of instances
+    min_size                  = 2         # number of instances
     health_check_type         = "EC2"
-    health_check_grace_period = 60
+    health_check_grace_period = 60        # seconds
     version                   = "$Latest"
     propagate_at_launch       = true
   }
@@ -137,7 +139,7 @@ database = {
   staging = {
     engine                  = "mysql"
     instance_class          = "db.t3.micro"
-    initial_storage         = 20
+    initial_storage         = 20         # GB
     username                = "staging_user"
     password                = "staging_pass"
     delete_automated_backup = true
@@ -148,7 +150,7 @@ database = {
   production = {
     engine                  = "mysql"
     instance_class          = "db.t3.micro"
-    initial_storage         = 50
+    initial_storage         = 50         # GB
     username                = "prod_user"
     password                = "prod_pass"
     delete_automated_backup = true
@@ -167,7 +169,7 @@ redis = {
     node_type = "cache.t3.micro"
     redis_settings = {
       engine             = "redis"
-      num_cache_clusters = 1
+      num_cache_clusters = 1         # number of nodes
     }
   }
 
@@ -175,7 +177,7 @@ redis = {
     node_type = "cache.t3.micro"
     redis_settings = {
       engine             = "redis"
-      num_cache_clusters = 1
+      num_cache_clusters = 1         # number of nodes
     }
   }
 }
@@ -189,29 +191,42 @@ alarm = {
     ec2   = "AWS/EC2"
     rds   = "AWS/RDS"
     redis = "AWS/ElastiCache"
+    logs  = "LogMetrics"          
   }
 
   metric = {
-    cpu     = "CPUUtilization"
-    memory  = "FreeableMemory"
-    conn    = "DatabaseConnections"
+    cpu        = "CPUUtilization"
+    memory     = "FreeableMemory"
+    conn       = "DatabaseConnections"
     redis_conn = "CurrConnections"
+
+    # log‑derived metrics
+    nginx_5xx  = "Nginx5xxErrorCount"
+    rds_error  = "RDSErrorCount"
+    redis_err  = "RedisErrorCount"
+    app_error  = "ApplicationErrorCount"
   }
 
   threshold = {
-    cpu     = 80
-    memory  = 200000000   # bytes
-    conn    = 100
-    redis_conn = 100
+    cpu        = 80           # percent
+    memory     = 200000000    # bytes
+    conn       = 100          # number of connections
+    redis_conn = 100          # number of connections
+
+    # all log metrics trip at 1
+    nginx_5xx  = 1            # count
+    rds_error  = 1            # count
+    redis_err  = 1            # count
+    app_error  = 1            # count
   }
 
-  dim = {
+  dim  = {            
     ec2   = "AutoScalingGroupName"
     rds   = "DBInstanceIdentifier"
     redis = "CacheClusterId"
   }
 
-  attr = {
+  attr = {            
     ec2   = "asg_name"
     rds   = "rds_id"
     redis = "redis_id"
@@ -219,15 +234,17 @@ alarm = {
 
   common_settings = {
     comparison_operator = "GreaterThanThreshold"
-    evaluation_periods  = 2     # Number of consecutive periods the metric must breach the threshold to trigger the alarm
-    period              = 300   # Period in seconds over which the metric is evaluated (e.g., 300 = 5 minutes)
-    statistic           = "Average"
+    evaluation_periods  = 1         # number of periods
+    period              = 300       # seconds
+    statistic           = "Sum"
   }
+
+  alert_email = "alerts@example.com"
 }
 
-logs = {
 
-  retention_in_days = 7
+logs = {
+  retention_in_days = 7         # days
 
   log_group_prefix = {
     staging    = "staging"
@@ -243,13 +260,6 @@ logs = {
   }
 
   filters = {
-    name = {
-      app    = "application-errors"
-      nginx  = "nginx-5xx-errors"
-      rds    = "rds-errors"
-      redis  = "redis-errors"
-    }
-
     pattern = {
       error  = "ERROR"
       status = "[status=5*]"
@@ -257,21 +267,13 @@ logs = {
 
     transformation = {
       name = {
-        app    = "ApplicationErrorCount"
-        nginx  = "Nginx5xxErrorCount"
-        rds    = "RDSErrorCount"
-        redis  = "RedisErrorCount"
+        app   = "ApplicationErrorCount"
+        nginx = "Nginx5xxErrorCount"
+        rds   = "RDSErrorCount"
+        redis = "RedisErrorCount"
       }
       namespace = "LogMetrics"
-      value     = "1"
+      value     = "1"         # constant value for log transformation
     }
   }
-}
-
-
-# ====================
-# Alerting Configuration
-# ====================
-alerting = {
-  alert_email = "alerts@example.com"
 }

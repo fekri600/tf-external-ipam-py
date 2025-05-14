@@ -5,10 +5,10 @@ resource "aws_sns_topic" "alerts" {
 }
 
 resource "aws_sns_topic_subscription" "email" {
-  count     = var.alert_email != "" ? 1 : 0
+  count     = var.alarm.alert_email != "" ? 1 : 0
   topic_arn = aws_sns_topic.alerts.arn
   protocol  = "email"
-  endpoint  = var.alert_email
+  endpoint  = var.alarm.alert_email
 }
 
 resource "aws_cloudwatch_metric_alarm" "this" {
@@ -39,50 +39,19 @@ resource "aws_cloudwatch_metric_alarm" "this" {
     (each.value.dimk) = each.value.id
   }
 }
-resource "aws_cloudwatch_metric_alarm" "nginx_5xx_alarm" {
-  alarm_name          = "${var.logs.og_group_prefix}-Nginx5xxErrors"
-  comparison_operator = "GreaterThanThreshold"
-  evaluation_periods  = 1
-  metric_name         = "Nginx5xxErrorCount"
-  namespace           = "LogMetrics"
-  period              = 300
-  statistic           = "Sum"
-  threshold           = 1
-  alarm_description   = "Triggered when NGINX 5xx errors are detected"
-}
+resource "aws_cloudwatch_metric_alarm" "log_metric_alarm" {
+  for_each = local.log_alarm_specs
 
-resource "aws_cloudwatch_metric_alarm" "rds_error_alarm" {
-  alarm_name          = "${var.logs.og_group_prefix}-RDSErrors"
-  comparison_operator = "GreaterThanThreshold"
-  evaluation_periods  = 1
-  metric_name         = "RDSErrorCount"
-  namespace           = "LogMetrics"
-  period              = 300
-  statistic           = "Sum"
-  threshold           = 1
-  alarm_description   = "Triggered when RDS errors occur"
-}
+  alarm_name          = each.value.alarm_name
+  metric_name         = each.value.metric_name
+  namespace           = var.alarm.namespace["logs"]
 
-resource "aws_cloudwatch_metric_alarm" "redis_error_alarm" {
-  alarm_name          = "${var.logs.og_group_prefix}-RedisErrors"
-  comparison_operator = "GreaterThanThreshold"
-  evaluation_periods  = 1
-  metric_name         = "RedisErrorCount"
-  namespace           = "LogMetrics"
-  period              = 300
-  statistic           = "Sum"
-  threshold           = 1
-  alarm_description   = "Triggered when Redis errors are detected"
-}
-# Optional Alarms (basic examples)
-resource "aws_cloudwatch_metric_alarm" "application_error_alarm" {
-  alarm_name          = "${var.logs.og_group_prefix}-ApplicationErrors"
-  comparison_operator = "GreaterThanThreshold"
-  evaluation_periods  = 1
-  metric_name         = "ApplicationErrorCount"
-  namespace           = "LogMetrics"
-  period              = 300
-  statistic           = "Sum"
-  threshold           = 1
-  alarm_description   = "Triggered when application errors exceed threshold"
+  comparison_operator = var.alarm.common_settings.comparison_operator
+  evaluation_periods  = var.alarm.common_settings.evaluation_periods
+  period              = var.alarm.common_settings.period
+  statistic           = var.alarm.common_settings.statistic
+  threshold           = each.value.threshold
+
+  alarm_description   = "Triggered when ${each.value.metric_name} exceeds threshold"
+  alarm_actions       = [aws_sns_topic.alerts.arn]
 }

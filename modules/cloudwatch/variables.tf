@@ -1,6 +1,5 @@
-# modules/cloudwatch/variables.tf
 variable "aws_region" { type = string }
-variable "alert_email" { type = string }
+
 variable "env_configs" { 
   type = map(object({ 
     asg_name = string
@@ -11,6 +10,7 @@ variable "env_configs" {
 variable "vpc_id" { type = string }
 
 variable "alarm" {
+  description = "CloudWatch alarm configuration"
   type = object({
     namespace = map(string)
     metric    = map(string)
@@ -23,8 +23,10 @@ variable "alarm" {
       period              = number
       statistic           = string
     })
+    alert_email = string
   })
 }
+
 
 
 variable "logs" {
@@ -34,7 +36,6 @@ variable "logs" {
     log_group_prefix   = map(string)         
     group_paths        = map(string)
     filters = object({
-      name = map(string)
       pattern = object({
         error  = string
         status = string
