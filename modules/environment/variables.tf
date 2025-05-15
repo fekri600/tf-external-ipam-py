@@ -112,3 +112,26 @@ variable "redis_subnet_group_name" {
   type        = string
 }
 
+variable "security_groups" {
+  description = "Security Groups configuration: ports and protocols"
+  type = object({
+    port = object({
+      http  = number
+      https = number
+      mysql = number
+      redis = number
+      any   = number
+    })
+    protocol = object({
+      tcp = string
+      any = string
+    })
+  })
+}
+variable "project_settings" {
+  description = "Project and region configuration"
+  type = object({
+    project    = string
+    aws_region = string
+  })
+}

@@ -44,7 +44,7 @@ resource "aws_cloudwatch_dashboard" "combined" {
           height = 6
           properties = {
             metrics = [[w.namespace, w.metric, w.dim, w.id, { label = w.title }]]
-            period  = 300
+            period  = var.alarm.common_settings.period
             stat    = "Average"
             region  = w.region
             title   = w.title

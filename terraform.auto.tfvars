@@ -34,21 +34,21 @@ load_balancer = {
   }
 
   lb_target_group = {
-    port     = 80       # port number
+    port     = 80 # port number
     protocol = "HTTP"
   }
 
   lb_health_check = {
     path                = "/"
-    interval            = 30       # seconds
-    timeout             = 5        # seconds
-    healthy_threshold   = 2        # number of successful checks
-    unhealthy_threshold = 2        # number of failed checks
+    interval            = 30 # seconds
+    timeout             = 5  # seconds
+    healthy_threshold   = 2  # number of successful checks
+    unhealthy_threshold = 2  # number of failed checks
     matcher             = "200-399"
   }
 
   listener = {
-    port        = 80       # port number
+    port        = 80 # port number
     protocol    = "HTTP"
     action_type = "forward"
   }
@@ -59,11 +59,11 @@ load_balancer = {
 # ==========================
 security_groups = {
   port = {
-    http  = 80      # port number
-    https = 443     # port number
-    mysql = 3306    # port number
-    redis = 6379    # port number
-    any   = 0       # port number (all)
+    http  = 80   # port number
+    https = 443  # port number
+    mysql = 3306 # port number
+    redis = 6379 # port number
+    any   = 0    # port number (all)
   }
   protocol = {
     tcp = "tcp"
@@ -111,21 +111,21 @@ launch_template = {
 # ==========================
 autoscaling = {
   staging = {
-    desired_capacity          = 2         # number of instances
-    max_size                  = 2         # number of instances
-    min_size                  = 2         # number of instances
+    desired_capacity          = 2 # number of instances
+    max_size                  = 2 # number of instances
+    min_size                  = 2 # number of instances
     health_check_type         = "EC2"
-    health_check_grace_period = 60        # seconds
+    health_check_grace_period = 60 # seconds
     version                   = "$Latest"
     propagate_at_launch       = true
   }
 
   production = {
-    desired_capacity          = 3         # number of instances
-    max_size                  = 5         # number of instances
-    min_size                  = 2         # number of instances
+    desired_capacity          = 3 # number of instances
+    max_size                  = 5 # number of instances
+    min_size                  = 2 # number of instances
     health_check_type         = "EC2"
-    health_check_grace_period = 60        # seconds
+    health_check_grace_period = 60 # seconds
     version                   = "$Latest"
     propagate_at_launch       = true
   }
@@ -139,18 +139,18 @@ database = {
   staging = {
     engine                  = "mysql"
     instance_class          = "db.t3.micro"
-    initial_storage         = 20         # GB
+    initial_storage         = 20 # GB
     username                = "staging_user"
     password                = "staging_pass"
     delete_automated_backup = true
-    iam_authentication      = false
+    iam_authentication      = true
     multi_az                = true
   }
 
   production = {
     engine                  = "mysql"
     instance_class          = "db.t3.micro"
-    initial_storage         = 50         # GB
+    initial_storage         = 50 # GB
     username                = "prod_user"
     password                = "prod_pass"
     delete_automated_backup = true
@@ -169,7 +169,7 @@ redis = {
     node_type = "cache.t3.micro"
     redis_settings = {
       engine             = "redis"
-      num_cache_clusters = 1         # number of nodes
+      num_cache_clusters = 1 # number of nodes
     }
   }
 
@@ -177,7 +177,7 @@ redis = {
     node_type = "cache.t3.micro"
     redis_settings = {
       engine             = "redis"
-      num_cache_clusters = 1         # number of nodes
+      num_cache_clusters = 1 # number of nodes
     }
   }
 }
@@ -191,7 +191,7 @@ alarm = {
     ec2   = "AWS/EC2"
     rds   = "AWS/RDS"
     redis = "AWS/ElastiCache"
-    logs  = "LogMetrics"          
+    logs  = "LogMetrics"
   }
 
   metric = {
@@ -201,32 +201,32 @@ alarm = {
     redis_conn = "CurrConnections"
 
     # log‑derived metrics
-    nginx_5xx  = "Nginx5xxErrorCount"
-    rds_error  = "RDSErrorCount"
-    redis_err  = "RedisErrorCount"
-    app_error  = "ApplicationErrorCount"
+    nginx_5xx = "Nginx5xxErrorCount"
+    rds_error = "RDSErrorCount"
+    redis_err = "RedisErrorCount"
+    app_error = "ApplicationErrorCount"
   }
 
   threshold = {
-    cpu        = 80           # percent
-    memory     = 200000000    # bytes
-    conn       = 100          # number of connections
-    redis_conn = 100          # number of connections
+    cpu        = 80        # percent
+    memory     = 200000000 # bytes
+    conn       = 100       # number of connections
+    redis_conn = 100       # number of connections
 
     # all log metrics trip at 1
-    nginx_5xx  = 1            # count
-    rds_error  = 1            # count
-    redis_err  = 1            # count
-    app_error  = 1            # count
+    nginx_5xx = 1 # count
+    rds_error = 1 # count
+    redis_err = 1 # count
+    app_error = 1 # count
   }
 
-  dim  = {            
+  dim = {
     ec2   = "AutoScalingGroupName"
     rds   = "DBInstanceIdentifier"
     redis = "CacheClusterId"
   }
 
-  attr = {            
+  attr = {
     ec2   = "asg_name"
     rds   = "rds_id"
     redis = "redis_id"
@@ -234,8 +234,8 @@ alarm = {
 
   common_settings = {
     comparison_operator = "GreaterThanThreshold"
-    evaluation_periods  = 1         # number of periods
-    period              = 300       # seconds
+    evaluation_periods  = 1   # number of periods
+    period              = 300 # seconds
     statistic           = "Sum"
   }
 
@@ -244,7 +244,7 @@ alarm = {
 
 
 logs = {
-  retention_in_days = 7         # days
+  retention_in_days = 7 # days
 
   log_group_prefix = {
     staging    = "staging"
@@ -273,7 +273,7 @@ logs = {
         redis = "RedisErrorCount"
       }
       namespace = "LogMetrics"
-      value     = "1"         # constant value for log transformation
+      value     = "1" # constant value for log transformation
     }
   }
 }

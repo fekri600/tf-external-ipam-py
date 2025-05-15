@@ -2,16 +2,40 @@
 data "aws_ssm_parameter" "ami" {
   name = "/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-${var.launch_template.architecture}-${var.launch_template.storage}"
 }
+
+
+data "aws_caller_identity" "current" {}
+
+
+
+
+
 resource "aws_iam_role" "ec2_role" {
   name               = "${var.prefix}-${var.environment}-ec2-role"
   assume_role_policy = file("${var.policies_path}/ec2_assume_role_policy.json")
 }
 
-
 resource "aws_iam_role_policy_attachment" "cloudwatch_agent" {
   role       = aws_iam_role.ec2_role.name
   policy_arn = "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
 }
+
+resource "aws_iam_role_policy_attachment" "rds_connect_attachment" {
+  role       = aws_iam_role.ec2_role.name
+  policy_arn = aws_iam_policy.rds_connect.arn
+}
+
+resource "aws_iam_policy" "rds_connect" {
+  name = "${var.prefix}-${var.environment}-rds-connect"
+
+  policy = templatefile("${var.policies_path}/rds_connect_policy.json", {
+    region         = var.project_settings.aws_region,
+    account_id     = data.aws_caller_identity.current.account_id,
+    db_resource_id = aws_db_instance.this.resource_id,
+    db_username    = var.database.username
+  })
+}
+
 
 resource "aws_iam_instance_profile" "ec2_profile" {
   name = "${var.prefix}-${var.environment}-ec2-profile"
@@ -31,8 +55,13 @@ resource "aws_launch_template" "this" {
   }
 
   user_data = base64encode(templatefile("${var.scripts_path}/user_data.sh.tmpl", {
-    log_group_prefix = "${var.environment}",
-  }))
+  log_group_prefix = var.environment,
+  db_user          = var.database.username,
+  db_port = var.security_groups.port.mysql
+  region           = var.project_settings.aws_region
+}))
+
+
 
   tag_specifications {
     resource_type = "instance"

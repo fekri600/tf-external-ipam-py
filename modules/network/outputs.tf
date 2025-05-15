@@ -11,3 +11,5 @@ output "redis_subnet_group_name" {value = aws_elasticache_subnet_group.redis.nam
 output "db_security_group_id" { value = aws_security_group.rds.id}
 output "redis_security_group_id" { value = aws_security_group.redis.id}
 
+
+

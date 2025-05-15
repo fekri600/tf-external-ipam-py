@@ -10,12 +10,14 @@ module "network" {
 
 
 module "staging" {
-  source      = "./modules/environment"
-  environment = "staging"
-  prefix      = local.name_prefix
+  source           = "./modules/environment"
+  environment      = "staging"
+  project_settings = var.project_settings
+  prefix           = local.name_prefix
 
-  policies_path = local.policies
-  scripts_path  = local.scripts
+  policies_path   = local.policies
+  scripts_path    = local.scripts
+  security_groups = var.security_groups
 
   launch_template       = var.launch_template.staging
   ec2_security_group_id = module.network.ec2_security_group_id
@@ -35,59 +37,60 @@ module "staging" {
     module.network,
   ]
 }
-module "production" {
-  source      = "./modules/environment"
-  environment = "production"
-  prefix      = local.name_prefix
 
-  policies_path = local.policies
-  scripts_path  = local.scripts
+# module "production" {
+#   source      = "./modules/environment"
+#   environment = "production"
+#   prefix      = local.name_prefix
 
-  launch_template       = var.launch_template.production
-  ec2_security_group_id = module.network.ec2_security_group_id
-  autoscaling           = var.autoscaling.production
-  target_group_arn      = module.network.target_group_arn
+#   policies_path = local.policies
+#   scripts_path  = local.scripts
 
-  database              = var.database.production
-  private_subnet_ids    = module.network.private_subnet_ids
-  db_security_group_ids = [module.network.db_security_group_id]
+#   launch_template       = var.launch_template.production
+#   ec2_security_group_id = module.network.ec2_security_group_id
+#   autoscaling           = var.autoscaling.production
+#   target_group_arn      = module.network.target_group_arn
 
-  rds_subnet_group_name = module.network.rds_subnet_group_name
+#   database              = var.database.production
+#   private_subnet_ids    = module.network.private_subnet_ids
+#   db_security_group_ids = [module.network.db_security_group_id]
 
-  redis                   = var.redis.production
-  redis_subnet_group_name = module.network.redis_subnet_group_name
-  redis_security_group_id = module.network.redis_security_group_id
+#   rds_subnet_group_name = module.network.rds_subnet_group_name
 
-  depends_on = [
-    module.network,
-  ]
-}
+#   redis                   = var.redis.production
+#   redis_subnet_group_name = module.network.redis_subnet_group_name
+#   redis_security_group_id = module.network.redis_security_group_id
+
+#   depends_on = [
+#     module.network,
+#   ]
+# }
 
 
-module "cloudwatch" {
-  source     = "./modules/cloudwatch"
-  aws_region = var.project_settings.aws_region
-  alarm      = var.alarm
-  logs       = var.logs
-  env_configs = {
-    staging = {
-      asg_name = module.staging.asg_name
-      rds_id   = module.staging.rds_id
-      redis_id = module.staging.redis_id
-    }
-    production = {
-      asg_name = module.production.asg_name
-      rds_id   = module.production.rds_id
-      redis_id = module.production.redis_id
-    }
-  }
-  vpc_id = module.network.vpc_id
+# module "cloudwatch" {
+#   source     = "./modules/cloudwatch"
+#   aws_region = var.project_settings.aws_region
+#   alarm      = var.alarm
+#   logs       = var.logs
+#   env_configs = {
+#     staging = {
+#       asg_name = module.staging.asg_name
+#       rds_id   = module.staging.rds_id
+#       redis_id = module.staging.redis_id
+#     }
+#     production = {
+#       asg_name = module.production.asg_name
+#       rds_id   = module.production.rds_id
+#       redis_id = module.production.redis_id
+#     }
+#   }
+#   vpc_id = module.network.vpc_id
 
-  depends_on = [
-    module.network,
-    module.staging,
-    module.production,
-  ]
-}
+#   depends_on = [
+#     module.network,
+#     module.staging,
+#     module.production,
+#   ]
+# }
 
 
