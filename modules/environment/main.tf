@@ -7,9 +7,6 @@ data "aws_ssm_parameter" "ami" {
 data "aws_caller_identity" "current" {}
 
 
-
-
-
 resource "aws_iam_role" "ec2_role" {
   name               = "${var.prefix}-${var.environment}-ec2-role"
   assume_role_policy = file("${var.policies_path}/ec2_assume_role_policy.json")
