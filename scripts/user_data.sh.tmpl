@@ -1,0 +1,103 @@
+#!/bin/bash
+set -xe
+
+# ==========
+# ENV SETUP
+# ==========
+# Passed from Terraform via templatefile()
+
+db_host="rds-${log_group_prefix}.xxxxxxxx.${region}.rds.amazonaws.com"
+
+# ==========
+# INSTALL TOOLS
+# ==========
+# Amazon Linux 2 uses yum; if you're on Ubuntu, replace with apt
+yum update -y
+yum install -y docker nginx amazon-cloudwatch-agent awscli mysql
+
+# ==========
+# RDS IAM Auth Test
+# ==========
+# Generate IAM token for RDS
+token=$(aws rds generate-db-auth-token \
+  --hostname "$db_host" \
+  --port "$db_port" \
+  --region "$region" \
+  --username "$db_user")
+
+# Attempt MySQL connection (logs in application.log)
+mysql -h "$db_host" \
+  -u "$db_user" \
+  --password="$token" \
+  --enable-cleartext-plugin \
+  -e "SELECT now();" >> /var/log/application.log 2>&1
+
+# ==========
+# SETUP LOG FILES
+# ==========
+touch /var/log/application.log
+chmod 644 /var/log/application.log
+echo "Application started on $(date)" >> /var/log/application.log
+
+# ==========
+# CLOUDWATCH CONFIG
+# ==========
+cat > /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json <<EOF
+{
+  "agent": {
+    "metrics_collection_interval": 60,
+    "run_as_user": "root"
+  },
+  "logs": {
+    "logs_collected": {
+      "files": {
+        "collect_list": [
+          {
+            "file_path": "/var/log/nginx/error.log",
+            "log_group_name": "/aws/ec2/nginx-${log_group_prefix}",
+            "log_stream_name": "{instance_id}-error"
+          },
+          {
+            "file_path": "/var/log/nginx/access.log",
+            "log_group_name": "/aws/ec2/nginx-${log_group_prefix}",
+            "log_stream_name": "{instance_id}-access"
+          },
+          {
+            "file_path": "/var/log/syslog",
+            "log_group_name": "/aws/ec2/system-${log_group_prefix}",
+            "log_stream_name": "{instance_id}-syslog"
+          },
+          {
+            "file_path": "/var/log/application.log",
+            "log_group_name": "/aws/ec2/application-${log_group_prefix}",
+            "log_stream_name": "{instance_id}-app"
+          }
+        ]
+      }
+    }
+  },
+  "metrics": {
+    "metrics_collected": {
+      "cpu": {
+        "measurement": ["cpu_usage_idle", "cpu_usage_user"],
+        "metrics_collection_interval": 60
+      },
+      "mem": {
+        "measurement": ["mem_used_percent"],
+        "metrics_collection_interval": 60
+      },
+      "disk": {
+        "resources": ["/"],
+        "measurement": ["used_percent"],
+        "metrics_collection_interval": 60
+      }
+    }
+  }
+}
+EOF
+
+# ==========
+# START SERVICES
+# ==========
+systemctl start amazon-cloudwatch-agent docker nginx
+systemctl enable amazon-cloudwatch-agent docker nginx

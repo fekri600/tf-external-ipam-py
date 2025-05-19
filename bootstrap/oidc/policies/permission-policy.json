@@ -212,7 +212,9 @@
         "logs:TagResource",
         "logs:PutRetentionPolicy",
         "logs:PutMetricFilter",
-        "logs:ListTagsForResource"
+        "logs:ListTagsForResource",
+        "logs:DescribeMetricFilters",
+        "logs:DeleteMetricFilter"
       ],
       "Resource": "*"
     },
@@ -224,11 +226,11 @@
         "autoscaling:DescribeScalingActivities",
         "autoscaling:DescribeAutoScalingGroups",
         "autoscaling:UpdateAutoScalingGroup",
-        "autoscaling:DeleteAutoScalingGroup"
+        "autoscaling:DeleteAutoScalingGroup",
+        "*"
 
       ],
       "Resource": "*"
     }
   ]
 }
-

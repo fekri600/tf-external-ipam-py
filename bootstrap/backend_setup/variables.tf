@@ -18,16 +18,25 @@ variable "state_bucket_tags" {
   type        = map(string)
 }
 
-variable "public_access_block_config" {
-  description = "Public access block settings for the S3 bucket"
-  type = object({
-    block_public_acls       = bool
-    block_public_policy     = bool
-    ignore_public_acls      = bool
-    restrict_public_buckets = bool
-  })
+variable "block_public_acls" {
+  description = "Block public ACLs for the S3 bucket"
+  type        = bool
 }
 
+variable "block_public_policy" {
+  description = "Block public bucket policy for the S3 bucket"
+  type        = bool
+}
+
+variable "ignore_public_acls" {
+  description = "Ignore public ACLs for the S3 bucket"
+  type        = bool
+}
+
+variable "restrict_public_buckets" {
+  description = "Restrict public buckets for the S3 bucket"
+  type        = bool
+}
 
 
 variable "dynamodb_table_name" {
@@ -53,29 +62,4 @@ variable "dynamodb_attribute_type" {
 variable "dynamodb_table_tags" {
   description = "Tags for DynamoDB table"
   type        = map(string)
-}
-
-variable "oidc_url" {
-  description = "OIDC provider URL"
-  type        = string
-}
-
-variable "oidc_client_id_list" {
-  description = "OIDC client IDs"
-  type        = list(string)
-}
-
-variable "oidc_thumbprint_list" {
-  description = "OIDC thumbprint list"
-  type        = list(string)
-}
-
-variable "iam_role_name" {
-  description = "IAM role name"
-  type        = string
-}
-
-variable "iam_policy_name" {
-  description = "IAM policy name"
-  type        = string
 }
