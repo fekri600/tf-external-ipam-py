@@ -18,6 +18,7 @@ apply:
 	@echo "🛠️ Generating providers.tf..."
 	bash scripts/generate_provider_file.sh
 
+
 	@echo "✅ Apply completed."
 
 
