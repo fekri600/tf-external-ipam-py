@@ -96,3 +96,23 @@ module "cloudwatch" {
 }
 
 
+module "connectivity_staging" {
+  source = "./modules/connectivity"
+
+  prefix                 = local.name_prefix
+  environment            = "staging"
+  rds_address            = module.staging.rds_address
+  redis_primary_endpoint = module.staging.redis_primary_endpoint
+  ec2_name_tag           = "${local.name_prefix}-staging-ec2"
+}
+
+module "connectivity_production" {
+  source = "./modules/connectivity"
+
+  prefix                 = local.name_prefix
+  environment            = "production"
+  rds_address            = module.production.rds_address
+  redis_primary_endpoint = module.production.redis_primary_endpoint
+  ec2_name_tag           = "${local.name_prefix}-production-ec2"
+}
+

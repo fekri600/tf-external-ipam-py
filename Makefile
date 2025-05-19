@@ -30,3 +30,7 @@ delete:
 	rm -f bootstrap/outputs/.backend_bucket bootstrap/outputs/.backend_table bootstrap/outputs/.backend_region bootstrap/outputs/.key bootstrap/outputs/.github_role
 
 	@echo "✅ Delete completed."
+
+test:
+	terraform init && terraform apply -auto-approve
+	
