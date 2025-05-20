@@ -11,21 +11,18 @@ db_host="rds-${log_group_prefix}.xxxxxxxx.${region}.rds.amazonaws.com"
 # ==========
 # INSTALL TOOLS
 # ==========
-# Amazon Linux 2 uses yum; if you're on Ubuntu, replace with apt
 yum update -y
 yum install -y docker nginx amazon-cloudwatch-agent awscli mysql
 
 # ==========
 # RDS IAM Auth Test
 # ==========
-# Generate IAM token for RDS
 token=$(aws rds generate-db-auth-token \
   --hostname "$db_host" \
   --port "$db_port" \
   --region "$region" \
   --username "$db_user")
 
-# Attempt MySQL connection (logs in application.log)
 mysql -h "$db_host" \
   -u "$db_user" \
   --password="$token" \

@@ -33,6 +33,12 @@ resource "aws_iam_policy" "rds_connect" {
   })
 }
 
+resource "aws_iam_role_policy_attachment" "ssm" {
+  role       = aws_iam_role.ec2_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+}
+
+
 
 resource "aws_iam_instance_profile" "ec2_profile" {
   name = "${var.prefix}-${var.environment}-ec2-profile"
@@ -82,7 +88,6 @@ resource "aws_autoscaling_group" "this" {
   launch_template {
     id      = aws_launch_template.this.id
     version = var.autoscaling.version
-
   }
 
   tag {

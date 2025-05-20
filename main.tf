@@ -39,8 +39,8 @@ module "staging" {
 }
 
 module "production" {
-  source      = "./modules/environment"
-  environment = "production"
+  source           = "./modules/environment"
+  environment      = "production"
   project_settings = var.project_settings
   prefix           = local.name_prefix
 
@@ -97,22 +97,25 @@ module "cloudwatch" {
 
 
 module "connectivity_staging" {
-  source = "./modules/connectivity"
-
+  source                 = "./modules/connectivity"
   prefix                 = local.name_prefix
   environment            = "staging"
+  aws_region             = var.project_settings.aws_region
   rds_address            = module.staging.rds_address
   redis_primary_endpoint = module.staging.redis_primary_endpoint
   ec2_name_tag           = "${local.name_prefix}-staging-ec2"
+  db_user                = var.database.staging.username
 }
 
 module "connectivity_production" {
-  source = "./modules/connectivity"
-
+  source                 = "./modules/connectivity"
   prefix                 = local.name_prefix
   environment            = "production"
+  aws_region             = var.project_settings.aws_region
   rds_address            = module.production.rds_address
   redis_primary_endpoint = module.production.redis_primary_endpoint
   ec2_name_tag           = "${local.name_prefix}-production-ec2"
+  db_user                = var.database.production.username
 }
+
 

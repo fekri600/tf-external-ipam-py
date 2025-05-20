@@ -1,10 +1,15 @@
 variable "prefix" {
-  description = "Prefix for naming resources"
+  description = "Prefix for resource naming"
   type        = string
 }
 
 variable "environment" {
-  description = "Environment name (e.g., staging, production)"
+  description = "Deployment environment (e.g., staging, production)"
+  type        = string
+}
+
+variable "aws_region" {
+  description = "AWS region"
   type        = string
 }
 
@@ -14,11 +19,16 @@ variable "rds_address" {
 }
 
 variable "redis_primary_endpoint" {
-  description = "Primary endpoint of the Redis cluster"
+  description = "Redis primary endpoint"
   type        = string
 }
 
 variable "ec2_name_tag" {
-  description = "The Name tag of EC2 instances to target (launched by ASG)"
+  description = "Name tag used to find EC2 instance for SSM test"
+  type        = string
+}
+
+variable "db_user" {
+  description = "Database username for IAM authentication test"
   type        = string
 }

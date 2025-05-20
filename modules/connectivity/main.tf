@@ -1,66 +1,48 @@
-# =============================
-# Connectivity Test via SSM
-# =============================
-
-# 1. Get EC2 private IPs via tag (for EC2s launched by ASG)
-data "aws_instances" "asg_ec2s" {
-  filter {
-    name   = "tag:Name"
-    values = ["${var.prefix}-${var.environment}-ec2"]
-  }
-
-  filter {
-    name   = "instance-state-name"
-    values = ["running"]
-  }
-
-  depends_on = [module.environment] # ensure ASG and resources are ready
-}
-
-# 2. Create SSM Document for connectivity testing
 resource "aws_ssm_document" "connectivity_test" {
   name          = "${var.prefix}-${var.environment}-connectivity-test"
   document_type = "Command"
 
   content = jsonencode({
-    schemaVersion = "2.2",
-    description   = "Connectivity testing to RDS, Redis, and EC2 peers",
-    mainSteps = [{
-      action = "aws:runShellScript",
-      name   = "testConnectivity",
-      inputs = {
-        runCommand = [
-          "echo '--- Testing RDS ---'",
-          "nc -zv ${aws_db_instance.this.address} 3306 || echo 'RDS connection failed'",
+    schemaVersion = "2.2"
+    description   = "Connectivity Test Script"
+    mainSteps = [
+      {
+        action = "aws:runShellScript"
+        name   = "testConnectivity"
+        inputs = {
+          runCommand = [
+            "echo 'Testing RDS Port...'",
+            "nc -zv ${var.rds_address} 3306 || echo 'RDS port check failed'",
 
-          "echo '--- Testing Redis ---'",
-          "nc -zv ${aws_elasticache_replication_group.redis.primary_endpoint_address} 6379 || echo 'Redis connection failed'",
+            "echo 'Testing Redis Port...'",
+            "nc -zv ${var.redis_primary_endpoint} 6379 || echo 'Redis port check failed'",
 
-          "echo '--- Testing EC2 Peers ---'",
-%{ for ip in data.aws_instances.asg_ec2s.private_ips ~}
-          "ping -c 2 ${ip} || echo 'Failed to ping ${ip}'",
-%{ endfor ~}
-        ]
+            "echo 'Testing Local Web Server...'",
+            "curl -s -o /dev/null -w '%%{http_code}' http://localhost || echo 'Web server test failed'",
+
+            "echo 'Testing RDS IAM Authentication...'",
+            "TOKEN=$(aws rds generate-db-auth-token --hostname ${var.rds_address} --port 3306 --region ${var.aws_region} --username ${var.db_user})",
+            "mysql --host=${var.rds_address} --port=3306 --enable-cleartext-plugin --user=${var.db_user} --password=\"$TOKEN\" -e 'SELECT NOW();' || echo 'IAM RDS auth failed'"
+          ]
+        }
       }
-    }]
+    ]
   })
 }
 
-# 3. Associate SSM document with EC2 instances by tag
-resource "aws_ssm_association" "connectivity_run" {
-  name = aws_ssm_document.connectivity_test.name
+resource "null_resource" "run_connectivity_test" {
+  depends_on = [
+    aws_ssm_document.connectivity_test
+  ]
 
-  targets = [{
-    Key    = "tag:Name"
-    Values = ["${var.prefix}-${var.environment}-ec2"]
-  }]
-
-  output_location {
-    cloudwatch_logs {
-      log_group_name = "/ssm/${var.prefix}/${var.environment}/connectivity"
-    }
+  provisioner "local-exec" {
+    command = <<EOT
+aws ssm send-command \
+  --document-name "${aws_ssm_document.connectivity_test.name}" \
+  --targets "Key=tag:Name,Values=${var.ec2_name_tag}" \
+  --comment "Connectivity test for ${var.environment}" \
+  --region ${var.aws_region} \
+  --cloud-watch-output-config '{"CloudWatchLogGroupName":"/ssm_connectivity-${var.environment}","CloudWatchOutputEnabled":true}'
+EOT
   }
-
-  wait_for_success_timeout = "2m"
-  depends_on = [aws_ssm_document.connectivity_test]
 }

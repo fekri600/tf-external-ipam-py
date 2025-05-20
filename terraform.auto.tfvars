@@ -257,6 +257,8 @@ logs = {
     system      = "/aws/ec2/system"
     rds         = "/aws/rds/mysql-logs"
     redis       = "/aws/elasticache/redis-logs"
+    ssm_connectivity = "/ssm/connectivity"
+
   }
 
   filters = {

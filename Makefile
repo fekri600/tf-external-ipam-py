@@ -1,5 +1,6 @@
 .ONESHELL:
 .SHELLFLAGS = -e -o pipefail -c
+ENVIRONMENTS = staging production
 
 apply:
 	@echo "🔧 Deploying bootstrap ..."
@@ -32,6 +33,32 @@ delete:
 
 	@echo "✅ Delete completed."
 
+
+
+
+
 test:
 	terraform init && terraform apply -auto-approve
-	
+	@echo "📡 Waiting 20 seconds for logs to be delivered..."
+	sleep 20
+
+	@echo "📡 Fetching CloudWatch logs for connectivity tests..."
+	@mkdir -p outputs
+	@for env in staging production; do \
+		echo "🔍 Environment: $$env"; \
+		LOG_GROUP="/ssm_connectivity-$$env"; \
+		INSTANCE_TAG="fekri-$$env-ec2"; \
+		INSTANCE_ID=$$(aws ec2 describe-instances --filters "Name=tag:Name,Values=$$INSTANCE_TAG" --query "Reservations[0].Instances[0].InstanceId" --output text); \
+		LOG_STREAM=$$(aws logs describe-log-streams --log-group-name $$LOG_GROUP --order-by LastEventTime --descending --limit 1 --query "logStreams[0].logStreamName" --output text 2>/dev/null); \
+		if [ "$$LOG_STREAM" = "None" ] || [ -z "$$LOG_STREAM" ]; then \
+			echo "⚠️  Logs not found for $$env. Skipping."; \
+		else \
+			echo "📥 Downloading logs for $$env..."; \
+			aws logs get-log-events \
+				--log-group-name "$$LOG_GROUP" \
+				--log-stream-name "$$LOG_STREAM" \
+				--limit 50 \
+				--output text > outputs/connectivity_test_$$env.txt; \
+			echo "✅ Logs saved to outputs/connectivity_test_$$env.txt"; \
+		fi; \
+	done
