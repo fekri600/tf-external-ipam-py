@@ -46,8 +46,8 @@ test:
 	@mkdir -p outputs
 	@for env in staging production; do \
 		echo "🔍 Environment: $$env"; \
-		LOG_GROUP="/ssm_connectivity-$$env"; \
-		INSTANCE_TAG="fekri-$$env-ec2"; \
+		LOG_GROUP="/aws/ssm/connectivity-$$env"; \
+		INSTANCE_TAG="i360moms-$$env-ec2"; \
 		INSTANCE_ID=$$(aws ec2 describe-instances --filters "Name=tag:Name,Values=$$INSTANCE_TAG" --query "Reservations[0].Instances[0].InstanceId" --output text); \
 		LOG_STREAM=$$(aws logs describe-log-streams --log-group-name $$LOG_GROUP --order-by LastEventTime --descending --limit 1 --query "logStreams[0].logStreamName" --output text 2>/dev/null); \
 		if [ "$$LOG_STREAM" = "None" ] || [ -z "$$LOG_STREAM" ]; then \

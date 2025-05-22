@@ -42,7 +42,7 @@ aws ssm send-command \
   --targets "Key=tag:Name,Values=${var.ec2_name_tag}" \
   --comment "Connectivity test for ${var.environment}" \
   --region ${var.aws_region} \
-  --cloud-watch-output-config '{"CloudWatchLogGroupName":"/ssm_connectivity-${var.environment}","CloudWatchOutputEnabled":true}'
+  --cloud-watch-output-config '{"CloudWatchLogGroupName":"${var.logs.group_paths.ssm_connectivity}-${var.environment}","CloudWatchOutputEnabled":true}'
 EOT
   }
 }

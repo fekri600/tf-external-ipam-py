@@ -12,7 +12,9 @@ db_host="rds-${log_group_prefix}.xxxxxxxx.${region}.rds.amazonaws.com"
 # INSTALL TOOLS
 # ==========
 yum update -y
-yum install -y docker nginx amazon-cloudwatch-agent awscli mysql
+yum install -y docker nginx amazon-cloudwatch-agent awscli mysql nc
+
+
 
 # ==========
 # RDS IAM Auth Test

@@ -2,7 +2,7 @@
 # Project Configuration
 # ======================
 project_settings = {
-  project    = "nginx"
+  project    = "i360moms"
   aws_region = "us-east-1"
 }
 
@@ -257,7 +257,7 @@ logs = {
     system      = "/aws/ec2/system"
     rds         = "/aws/rds/mysql-logs"
     redis       = "/aws/elasticache/redis-logs"
-    ssm_connectivity = "/ssm/connectivity"
+    ssm_connectivity = "/aws/ssm/connectivity"
 
   }
 

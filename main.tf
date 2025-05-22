@@ -101,6 +101,7 @@ module "connectivity_staging" {
   prefix                 = local.name_prefix
   environment            = "staging"
   aws_region             = var.project_settings.aws_region
+  logs                   = var.logs
   rds_address            = module.staging.rds_address
   redis_primary_endpoint = module.staging.redis_primary_endpoint
   ec2_name_tag           = "${local.name_prefix}-staging-ec2"
@@ -112,6 +113,7 @@ module "connectivity_production" {
   prefix                 = local.name_prefix
   environment            = "production"
   aws_region             = var.project_settings.aws_region
+  logs                   = var.logs
   rds_address            = module.production.rds_address
   redis_primary_endpoint = module.production.redis_primary_endpoint
   ec2_name_tag           = "${local.name_prefix}-production-ec2"
