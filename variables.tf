@@ -76,8 +76,14 @@ variable "load_balancer" {
     })
 
     listener = object({
-      port        = number
-      protocol    = string
+      port = object({
+        http  = number
+        https = number
+      })
+      protocol = object({
+        http  = string
+        https = string
+      })
       action_type = string
     })
   })

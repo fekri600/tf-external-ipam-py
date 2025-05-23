@@ -45,12 +45,20 @@ variable "load_balancer" {
     })
 
     listener = object({                    # ✅ Correct name is "listener"
-      port        = number
-      protocol    = string
+      port        = object({
+        http  = number
+        https = number
+      })
+      protocol    = object({
+        http  = string
+        https = string
+      })
       action_type = string
     })
   })
 }
+
+
 
 
 variable "security_groups" {

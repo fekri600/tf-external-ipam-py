@@ -4,32 +4,29 @@ set -xe
 # ==========
 # ENV SETUP
 # ==========
-# Passed from Terraform via templatefile()
-
 db_host="rds-${log_group_prefix}.xxxxxxxx.${region}.rds.amazonaws.com"
 
 # ==========
 # INSTALL TOOLS
 # ==========
 yum update -y
-yum install -y docker nginx amazon-cloudwatch-agent awscli mysql nc
-
-
+yum install -y docker nginx amazon-cloudwatch-agent awscli mariadb nc
 
 # ==========
 # RDS IAM Auth Test
 # ==========
+echo "Testing RDS IAM Authentication..." >> /var/log/application.log
+
 token=$(aws rds generate-db-auth-token \
   --hostname "$db_host" \
   --port "$db_port" \
   --region "$region" \
   --username "$db_user")
 
-mysql -h "$db_host" \
+mariadb -h "$db_host" \
   -u "$db_user" \
   --password="$token" \
-  --enable-cleartext-plugin \
-  -e "SELECT now();" >> /var/log/application.log 2>&1
+  -e "SELECT now();" >> /var/log/application.log 2>&1 || echo "IAM RDS auth failed" >> /var/log/application.log
 
 # ==========
 # SETUP LOG FILES
@@ -94,6 +91,11 @@ cat > /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json <<EOF
   }
 }
 EOF
+
+# ==========
+# CREATE TEST WEB PAGE
+# ==========
+echo "<html><body><h1>Environment: ${log_group_prefix}</h1></body></html>" > /usr/share/nginx/html/index.html
 
 # ==========
 # START SERVICES

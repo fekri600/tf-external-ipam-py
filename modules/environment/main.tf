@@ -38,6 +38,16 @@ resource "aws_iam_role_policy_attachment" "ssm" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
 }
 
+resource "aws_iam_policy" "ssm_logging" {
+  name   = "${var.prefix}-${var.environment}-ssm-logging"
+  policy = file("${var.policies_path}/ssm_logging_policy.json")
+}
+
+resource "aws_iam_role_policy_attachment" "ssm_logging" {
+  role       = aws_iam_role.ec2_role.name
+  policy_arn = aws_iam_policy.ssm_logging.arn
+}
+
 
 
 resource "aws_iam_instance_profile" "ec2_profile" {
@@ -92,7 +102,7 @@ resource "aws_autoscaling_group" "this" {
 
   tag {
     key                 = "Name"
-    value               = "${var.prefix}-${var.environment}-asg"
+    value               = "${var.prefix}-${var.environment}-ec2"
     propagate_at_launch = var.autoscaling.propagate_at_launch
   }
 }

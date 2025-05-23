@@ -135,16 +135,60 @@ resource "aws_lb" "nginx" {
 }
 
 # Create a listener on the ALB for incoming HTTP/HTTPS traffic
-resource "aws_lb_listener" "nginx" {
+resource "aws_lb_listener" "http" {
   load_balancer_arn = aws_lb.nginx.arn
-  port              = var.load_balancer.listener.port
-  protocol          = var.load_balancer.listener.protocol
+  port              = var.load_balancer.listener.port.http
+  protocol          = var.load_balancer.listener.protocol.http
 
   default_action {
     type             = var.load_balancer.listener.action_type
     target_group_arn = aws_lb_target_group.nginx.arn
   }
 }
+
+# resource "aws_lb_listener" "https" {
+#   load_balancer_arn = aws_lb.nginx.arn
+#   port              = var.load_balancer.listener.port.https
+#   protocol          = var.load_balancer.listener.protocol.https
+#   ssl_policy        = "ELBSecurityPolicy-2016-08"
+#   certificate_arn   = aws_acm_certificate.cert.arn
+#   default_action {
+#     type             = var.load_balancer.listener.action_type
+#     target_group_arn = aws_lb_target_group.nginx.arn
+#   }
+# }
+
+# # --------------------------
+# # ACM Certificate
+# # --------------------------
+# resource "aws_acm_certificate" "cert" {
+#   domain_name       = "yourdomain.com"
+#   validation_method = "DNS"
+#   tags = {
+#     Name = "i360moms-com-cert"
+#   }
+# }
+
+# # --------------------------
+# # Route 53 Validation
+# # --------------------------
+# data "aws_route53_zone" "yourdomain" {
+#   name         = "yourdomain.com."
+#   private_zone = false
+# }
+
+# resource "aws_route53_record" "cert_validation" {
+#   name    = aws_acm_certificate.cert.domain_validation_options[0].resource_record_name
+#   type    = aws_acm_certificate.cert.domain_validation_options[0].resource_record_type
+#   zone_id = data.aws_route53_zone.fekri.zone_id
+#   records = [aws_acm_certificate.cert.domain_validation_options[0].resource_record_value]
+#   ttl     = 60
+# }
+
+# resource "aws_acm_certificate_validation" "cert" {
+#   certificate_arn         = aws_acm_certificate.cert.arn
+#   validation_record_fqdns = [aws_route53_record.cert_validation.fqdn]
+# }
 
 
 
