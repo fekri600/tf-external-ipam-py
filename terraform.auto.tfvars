@@ -151,6 +151,7 @@ database = {
     delete_automated_backup = true
     iam_authentication      = true
     multi_az                = true
+
   }
 
   production = {
@@ -160,8 +161,10 @@ database = {
     username                = "prod_user"
     password                = "prod_pass"
     delete_automated_backup = true
-    iam_authentication      = false
+    iam_authentication      = true
     multi_az                = true
+    backup_retention_period   = 7
+    backup_window             = "22:00-23:00" # optional; format is HH:MM-HH:MM in UTC
   }
 }
 

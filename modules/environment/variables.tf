@@ -53,6 +53,8 @@ variable "database" {
     delete_automated_backup = bool
     iam_authentication      = bool
     multi_az                = bool
+    backup_retention_period = number
+    backup_window           = string
   })
   sensitive = true
 }
