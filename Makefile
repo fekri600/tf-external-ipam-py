@@ -62,4 +62,3 @@ test:
 			echo "✅ Logs saved to outputs/connectivity_test_$$env.txt"; \
 		fi; \
 	done
-	
