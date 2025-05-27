@@ -151,6 +151,9 @@ database = {
     delete_automated_backup = true
     iam_authentication      = true
     multi_az                = true
+    backup_retention_period   = 0 # 0 means no backup
+    backup_window             = "22:00-23:00" # optional; format is HH:MM-HH:MM in UTC
+ 
 
   }
 

@@ -4,6 +4,10 @@ set -xe
 # ==========
 # ENV SETUP
 # ==========
+region="${region}"
+log_group_prefix="${log_group_prefix}"
+db_user="${db_user}"
+db_port="${db_port}"
 db_host="rds-${log_group_prefix}.xxxxxxxx.${region}.rds.amazonaws.com"
 
 # ==========
@@ -13,9 +17,18 @@ yum update -y
 yum install -y docker nginx amazon-cloudwatch-agent awscli mariadb nc
 
 # ==========
+# SETUP LOG FILES
+# ==========
+LOG_FILE="/var/log/application.log"
+mkdir -p $(dirname $LOG_FILE)
+touch $LOG_FILE
+chmod 644 $LOG_FILE
+echo "Application started on $(date)" >> $LOG_FILE
+
+# ==========
 # RDS IAM Auth Test
 # ==========
-echo "Testing RDS IAM Authentication..." >> /var/log/application.log
+echo "Testing RDS IAM Authentication..." >> $LOG_FILE
 
 token=$(aws rds generate-db-auth-token \
   --hostname "$db_host" \
@@ -23,17 +36,14 @@ token=$(aws rds generate-db-auth-token \
   --region "$region" \
   --username "$db_user")
 
-mariadb -h "$db_host" \
-  -u "$db_user" \
-  --password="$token" \
-  -e "SELECT now();" >> /var/log/application.log 2>&1 || echo "IAM RDS auth failed" >> /var/log/application.log
-
-# ==========
-# SETUP LOG FILES
-# ==========
-touch /var/log/application.log
-chmod 644 /var/log/application.log
-echo "Application started on $(date)" >> /var/log/application.log
+if [ -z "$token" ]; then
+  echo "❌ Failed to generate RDS IAM token" >> $LOG_FILE
+else
+  mariadb -h "$db_host" \
+    -u "$db_user" \
+    --password="$token" \
+    -e "SELECT NOW();" >> $LOG_FILE 2>&1 || echo "❌ IAM RDS auth failed" >> $LOG_FILE
+fi
 
 # ==========
 # CLOUDWATCH CONFIG
@@ -59,10 +69,15 @@ cat > /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json <<EOF
             "log_stream_name": "{instance_id}-access"
           },
           {
-            "file_path": "/var/log/syslog",
+            "file_path": "/var/log/messages",
             "log_group_name": "/aws/ec2/system-${log_group_prefix}",
             "log_stream_name": "{instance_id}-syslog"
           },
+          {
+            "file_path": "/var/log/application.log",
+            "log_group_name": "/aws/ec2/application-${log_group_prefix}",
+            "log_stream_name": "{instance_id}-app"
+          }
           {
             "file_path": "/var/log/application.log",
             "log_group_name": "/aws/ec2/application-${log_group_prefix}",
