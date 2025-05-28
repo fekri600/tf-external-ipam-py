@@ -67,4 +67,8 @@ variable "database" {
   })
   sensitive = true
 }
-
+variable "scripts_path" {
+  description = "base path to scripts files"
+  type = string
+  
+}
