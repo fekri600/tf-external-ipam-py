@@ -16,17 +16,17 @@ variable "policies_path" {
 }
 variable "scripts_path" {
   description = "base path to scripts files"
-  type = string
-  
+  type        = string
+
 }
 
 
 variable "launch_template" {
   description = "Launch template configuration"
   type = object({
-    architecture   = string
-    storage        = string
-    instance_type  = string
+    architecture  = string
+    storage       = string
+    instance_type = string
   })
 }
 
@@ -45,11 +45,11 @@ variable "autoscaling" {
 variable "database" {
   description = "RDS instance settings for staging and production"
   type = object({
-    engine                   = string
-    instance_class           = string
-    initial_storage          = number
-    username                 = string
-    password                 = string
+    engine                  = string
+    instance_class          = string
+    initial_storage         = number
+    username                = string
+    password                = string
     delete_automated_backup = bool
     iam_authentication      = bool
     multi_az                = bool

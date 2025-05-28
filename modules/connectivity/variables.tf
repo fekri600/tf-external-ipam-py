@@ -54,11 +54,11 @@ variable "logs" {
 variable "database" {
   description = "RDS instance settings for staging and production"
   type = object({
-    engine                   = string
-    instance_class           = string
-    initial_storage          = number
-    username                 = string
-    password                 = string
+    engine                  = string
+    instance_class          = string
+    initial_storage         = number
+    username                = string
+    password                = string
     delete_automated_backup = bool
     iam_authentication      = bool
     multi_az                = bool
@@ -69,6 +69,6 @@ variable "database" {
 }
 variable "scripts_path" {
   description = "base path to scripts files"
-  type = string
-  
+  type        = string
+
 }

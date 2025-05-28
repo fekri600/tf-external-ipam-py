@@ -1,6 +1,6 @@
 resource "aws_s3_bucket" "terraform_state" {
   bucket = var.state_bucket_name
-  tags = var.state_bucket_tags
+  tags   = var.state_bucket_tags
 
 }
 

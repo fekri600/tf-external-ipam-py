@@ -1,5 +1,5 @@
-variable "environment" { type = string}
-variable "prefix" {type = string}
+variable "environment" { type = string }
+variable "prefix" { type = string }
 
 variable "project_settings" {
   description = "Project and region configuration"
@@ -10,14 +10,14 @@ variable "project_settings" {
 }
 variable "network" {
   type = object({
-    enable_dns_support        = bool
-    enable_dns_hostnames      = bool
-    vpc_cidr                  = string
-    public_subnets            = list(string)
-    private_subnets           = list(string)
-    availability_zones        = list(string)
-    eip_domain                = string
-    default_route_cidr_block  = string
+    enable_dns_support       = bool
+    enable_dns_hostnames     = bool
+    vpc_cidr                 = string
+    public_subnets           = list(string)
+    private_subnets          = list(string)
+    availability_zones       = list(string)
+    eip_domain               = string
+    default_route_cidr_block = string
   })
 }
 
@@ -44,12 +44,12 @@ variable "load_balancer" {
       matcher             = string
     })
 
-    listener = object({                    # ✅ Correct name is "listener"
-      port        = object({
+    listener = object({ # ✅ Correct name is "listener"
+      port = object({
         http  = number
         https = number
       })
-      protocol    = object({
+      protocol = object({
         http  = string
         https = string
       })

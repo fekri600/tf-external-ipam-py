@@ -9,7 +9,7 @@ data "aws_caller_identity" "current" {}
 
 
 locals {
-  
+
   oidc_provider_arn = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:oidc-provider/token.actions.githubusercontent.com"
 }
 
@@ -35,7 +35,7 @@ resource "aws_iam_role" "github_trust_role" {
 
 # Define the IAM policy with necessary permissions
 resource "aws_iam_policy" "github_devops_policy" {
-  name   = var.iam_policy_name
+  name = var.iam_policy_name
   policy = templatefile("${path.module}/policies/permission-policy.json", {
     state_bucket_name = var.state_bucket_name
     state_bucket_name = var.state_bucket_name

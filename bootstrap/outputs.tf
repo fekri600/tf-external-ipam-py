@@ -11,7 +11,7 @@ output "bucket_name" {
 
 output "dynamodb_table_name" {
   value = module.backend_setup.dynamodb_table_name
-} 
+}
 
 output "TRUST_ROLE_GITHUB" {
   description = "The ARN of the IAM role GitHub Actions can assume"

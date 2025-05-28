@@ -1,22 +1,4 @@
-locals {
-  metric_widgets = flatten([
-    for name, spec in local.alarm_specs : [
-      for env, cfg in var.env_configs : {
-        x         = 0
-        y         = 0
-        width     = 12
-        height    = 6
-        type      = "metric"
-        namespace = spec.namespace
-        metric    = spec.metric
-        dim       = spec.dim
-        id        = lookup(cfg, spec.attr)
-        title     = "${env} ${name}"
-        region    = var.aws_region
-      }
-    ]
-  ])
-}
+
 
 resource "aws_cloudwatch_dashboard" "combined" {
   dashboard_name = "combined-dashboard"

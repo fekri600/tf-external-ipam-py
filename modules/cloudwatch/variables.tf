@@ -1,11 +1,11 @@
 variable "aws_region" { type = string }
 
-variable "env_configs" { 
-  type = map(object({ 
+variable "env_configs" {
+  type = map(object({
     asg_name = string
-    rds_id = string
-    redis_id = string 
-  })) 
+    rds_id   = string
+    redis_id = string
+  }))
 }
 variable "vpc_id" { type = string }
 
@@ -32,9 +32,9 @@ variable "alarm" {
 variable "logs" {
   description = "CloudWatch log configuration for all services"
   type = object({
-    retention_in_days  = number
-    log_group_prefix   = map(string)         
-    group_paths        = map(string)
+    retention_in_days = number
+    log_group_prefix  = map(string)
+    group_paths       = map(string)
     filters = object({
       pattern = object({
         error  = string

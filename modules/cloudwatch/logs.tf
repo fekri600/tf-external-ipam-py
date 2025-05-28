@@ -4,7 +4,7 @@ resource "aws_cloudwatch_log_group" "this" {
 
   name              = each.value.full_name
   retention_in_days = var.logs.retention_in_days
-  tags              = {
+  tags = {
     VpcId = var.vpc_id
   }
 }

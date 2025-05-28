@@ -42,9 +42,9 @@ resource "aws_cloudwatch_metric_alarm" "this" {
 resource "aws_cloudwatch_metric_alarm" "log_metric_alarm" {
   for_each = local.log_alarm_specs
 
-  alarm_name          = each.value.alarm_name
-  metric_name         = each.value.metric_name
-  namespace           = var.alarm.namespace["logs"]
+  alarm_name  = each.value.alarm_name
+  metric_name = each.value.metric_name
+  namespace   = var.alarm.namespace["logs"]
 
   comparison_operator = var.alarm.common_settings.comparison_operator
   evaluation_periods  = var.alarm.common_settings.evaluation_periods
@@ -52,6 +52,6 @@ resource "aws_cloudwatch_metric_alarm" "log_metric_alarm" {
   statistic           = var.alarm.common_settings.statistic
   threshold           = each.value.threshold
 
-  alarm_description   = "Triggered when ${each.value.metric_name} exceeds threshold"
-  alarm_actions       = [aws_sns_topic.alerts.arn]
+  alarm_description = "Triggered when ${each.value.metric_name} exceeds threshold"
+  alarm_actions     = [aws_sns_topic.alerts.arn]
 }

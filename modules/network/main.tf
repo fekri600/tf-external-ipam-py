@@ -51,7 +51,7 @@ resource "aws_route_table" "private" {
   vpc_id = aws_vpc.this.id
 
   route {
-    cidr_block     = var.network.default_route_cidr_block  
+    cidr_block     = var.network.default_route_cidr_block
     nat_gateway_id = aws_nat_gateway.this[count.index].id
   }
 
@@ -122,11 +122,11 @@ resource "aws_lb_target_group" "nginx" {
 
 # Create the Application Load Balancer (ALB)
 resource "aws_lb" "nginx" {
-  name               = "${var.prefix}-${var.environment}-alb"
-  load_balancer_type = var.load_balancer.alb_settings.load_balancer_type
-  security_groups    = [aws_security_group.alb.id]
-  subnets            = aws_subnet.public[*].id
-  internal           = var.load_balancer.alb_settings.internal
+  name                       = "${var.prefix}-${var.environment}-alb"
+  load_balancer_type         = var.load_balancer.alb_settings.load_balancer_type
+  security_groups            = [aws_security_group.alb.id]
+  subnets                    = aws_subnet.public[*].id
+  internal                   = var.load_balancer.alb_settings.internal
   enable_deletion_protection = var.load_balancer.alb_settings.enable_deletion_protection
 
   tags = {
@@ -236,7 +236,7 @@ resource "aws_security_group" "ec2" {
   }
 
 
-   egress {
+  egress {
     from_port   = var.security_groups.port.any
     to_port     = var.security_groups.port.any
     protocol    = var.security_groups.protocol.any
@@ -261,7 +261,7 @@ resource "aws_security_group" "rds" {
     security_groups = [aws_security_group.ec2.id]
   }
 
- egress {
+  egress {
     from_port   = var.security_groups.port.any
     to_port     = var.security_groups.port.any
     protocol    = var.security_groups.protocol.any
