@@ -106,6 +106,7 @@ module "connectivity_staging" {
   redis_primary_endpoint = module.staging.redis_primary_endpoint
   ec2_name_tag           = "${local.name_prefix}-staging-ec2"
   db_user                = var.database.staging.username
+  database = var.database.staging
 }
 
 # module "connectivity_production" {
@@ -118,6 +119,7 @@ module "connectivity_staging" {
 #   redis_primary_endpoint = module.production.redis_primary_endpoint
 #   ec2_name_tag           = "${local.name_prefix}-production-ec2"
 #   db_user                = var.database.production.username
+#   database = var.database.production
 # }
 
 

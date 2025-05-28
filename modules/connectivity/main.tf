@@ -20,9 +20,21 @@ resource "aws_ssm_document" "connectivity_test" {
                 sleep 2
               done
 
-              [ -f "$LOG_FILE" ] || touch "$LOG_FILE"
+              # Create or truncate the log file if needed (optional)
+              > "$LOG_FILE"
 
-              echo "== START CONNECTIVITY TEST ==" >> "$LOG_FILE"
+              # Add a blank line for separation (useful between runs)
+              echo "-------------------$(date '+%Y-%m-%d %H:%M:%S')-----------------------" >> "$LOG_FILE"
+
+              # Add header with timestamp
+              echo "== START CONNECTIVITY TEST == " >> "$LOG_FILE"
+
+
+              echo "SSM Shell Environment Diagnostics:" >> "$LOG_FILE"
+              echo "User: $(whoami)" >> "$LOG_FILE"
+              echo "Home: $HOME" >> "$LOG_FILE"
+              echo "MySQL Defaults:" >> "$LOG_FILE"
+              mysql --print-defaults >> "$LOG_FILE" 2>&1
 
               echo "Testing RDS Port..." >> "$LOG_FILE"
               if nc -z ${var.rds_address} 3306; then
@@ -38,18 +50,32 @@ resource "aws_ssm_document" "connectivity_test" {
                 echo "❌ Redis port 6379 is NOT reachable" >> "$LOG_FILE"
               fi
 
-              echo "Testing RDS IAM Authentication..." >> "$LOG_FILE"
+              echo "Ensuring IAM Auth Plugin is configured..." >> "$LOG_FILE"
+              mysql --enable-cleartext-plugin \
+                -h ${var.rds_address} \
+                -u ${var.db_user} \
+                --password="${var.database.password}" \
+                -e "ALTER USER '${var.db_user}'@'%' IDENTIFIED WITH AWSAuthenticationPlugin AS 'RDS';" >> "$LOG_FILE" 2>&1
+
+              echo "Generating RDS IAM Auth Token..." >> "$LOG_FILE"
               token=$(aws rds generate-db-auth-token \
                 --hostname ${var.rds_address} \
                 --port 3306 \
                 --region ${var.aws_region} \
                 --username ${var.db_user})
 
-              mysql -h ${var.rds_address} -u ${var.db_user} \
+              echo "Testing IAM Authentication..." >> "$LOG_FILE"
+              mysql --enable-cleartext-plugin \
+                -h ${var.rds_address} \
+                -u ${var.db_user} \
                 --password="$token" \
-                --enable-cleartext-plugin \
-                -e "SELECT NOW();" >> "$LOG_FILE" 2>&1 || \
-                echo "❌ IAM RDS auth failed" >> "$LOG_FILE"
+                -e "SELECT NOW();" >> "$LOG_FILE" 2>&1
+
+              if [ $? -eq 0 ]; then
+                echo "✅ IAM RDS auth succeeded" >> "$LOG_FILE"
+              else
+                echo "❌ IAM RDS auth failed — is '${var.db_user}' IAM-enabled via AWSAuthenticationPlugin?" >> "$LOG_FILE"
+              fi
 
               echo "Testing internet access..." >> "$LOG_FILE"
               if curl -s https://www.google.com > /dev/null; then

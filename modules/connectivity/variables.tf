@@ -51,4 +51,20 @@ variable "logs" {
     })
   })
 }
+variable "database" {
+  description = "RDS instance settings for staging and production"
+  type = object({
+    engine                   = string
+    instance_class           = string
+    initial_storage          = number
+    username                 = string
+    password                 = string
+    delete_automated_backup = bool
+    iam_authentication      = bool
+    multi_az                = bool
+    backup_retention_period = number
+    backup_window           = string
+  })
+  sensitive = true
+}
 
