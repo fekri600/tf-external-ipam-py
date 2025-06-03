@@ -3,6 +3,14 @@ name: Terraform Deployment to AWS
 on:
   workflow_dispatch:
     inputs:
+      environment:
+        description: 'Select the environment to deploy'
+        required: true
+        type: choice
+        options:
+          - staging
+          - production
+
       destroy:
         description: 'Set true to destroy the environment'
         required: false
@@ -12,14 +20,13 @@ on:
           - 'false'
           - 'true'
 
-
 permissions:
   id-token: write
   contents: read
 
 jobs:
   terraform:
-    name: 'Terraform Apply'
+    name: 'Terraform Apply or Destroy'
     runs-on: ubuntu-latest
 
     steps:
@@ -33,16 +40,20 @@ jobs:
         with:
           terraform_version: 1.11.4
 
-      - name: Install Make
+      - name: Install Make (optional if you're not using it in this job)
         run: sudo apt-get update && sudo apt-get install -y make
 
-      - name: Configure AWS credentials (DevOps role)
+      - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.TRUST_ROLE_GITHUB }}
           aws-region: us-east-1
           role-session-name: GitHubActions-${{ github.run_id }}
           role-duration-seconds: 3600
+
+      - name: Select or create Terraform workspace
+        run: |
+          terraform workspace select ${{ github.event.inputs.environment }} || terraform workspace new ${{ github.event.inputs.environment }}
 
       - name: Terraform Init
         run: terraform init
@@ -56,11 +67,9 @@ jobs:
       - name: Terraform Apply or Destroy
         run: |
           if [[ "${{ github.event.inputs.destroy }}" == "true" ]]; then
-            terraform destroy -auto-approve
+            terraform destroy -auto-approve -var-file="${{ github.event.inputs.environment }}.tfvars"
           else
-            terraform apply -auto-approve
+            terraform apply -auto-approve -var-file="${{ github.event.inputs.environment }}.tfvars"
           fi
         env:
-          TF_VAR_stag_db_password: ${{ secrets.STAG_DB_PASS }}
-          TF_VAR_prod_db_password: ${{ secrets.PROD_DB_PASS }}
-
+          TF_VAR_db_password: ${{ github.event.inputs.environment == 'staging' && secrets.STAG_DB_PASS || secrets.PROD_DB_PASS }}
