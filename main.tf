@@ -70,10 +70,11 @@ module "staging" {
 
 
 module "cloudwatch" {
-  source     = "./modules/cloudwatch"
-  aws_region = var.project_settings.aws_region
-  alarm      = var.alarm
-  logs       = var.logs
+  source           = "./modules/cloudwatch"
+  aws_region       = var.project_settings.aws_region
+  alarm            = var.alarm
+  logs             = var.logs
+  dashboard_config = var.dashboard_config
   env_configs = {
     staging = {
       asg_name = module.staging.asg_name
@@ -120,7 +121,8 @@ module "connectivity_staging" {
 #   redis_primary_endpoint = module.production.redis_primary_endpoint
 #   ec2_name_tag           = "${local.name_prefix}-production-ec2"
 #   db_user                = var.database.production.username
-#   database = var.database.production
+#   database               = var.database.production
+#   scripts_path           = local.scripts
 # }
 
 

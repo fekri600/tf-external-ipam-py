@@ -291,3 +291,11 @@ logs = {
     }
   }
 }
+
+# ====================
+# Dashboard Configuration
+# ====================
+dashboard_config = {
+  create_combined_dashboard  = false
+  create_separate_dashboards = true
+}

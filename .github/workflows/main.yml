@@ -11,6 +11,14 @@ on:
         options:
           - 'false'
           - 'true'
+      run_tests:
+        description: 'Run connectivity tests after apply'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
 
 permissions:
   id-token: write
@@ -32,6 +40,9 @@ jobs:
         with:
           terraform_version: 1.11.4
 
+      - name: Install Make
+        run: sudo apt-get update && sudo apt-get install -y make
+
       - name: Configure AWS credentials (DevOps role)
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -39,7 +50,7 @@ jobs:
           aws-region: us-east-1
           role-session-name: GitHubActions-${{ github.run_id }}
           role-duration-seconds: 3600
-      # what's the problem here
+
       - name: Terraform Init
         run: terraform init
 
@@ -49,7 +60,7 @@ jobs:
       - name: Terraform Validate
         run: terraform validate
 
-      - name: Terraform Apply
+      - name: Terraform Apply or Destroy
         run: |
           if [[ "${{ github.event.inputs.destroy }}" == "true" ]]; then
             terraform destroy -auto-approve
@@ -59,3 +70,7 @@ jobs:
         env:
           TF_VAR_stag_db_password: ${{ secrets.STAG_DB_PASS }}
           TF_VAR_prod_db_password: ${{ secrets.PROD_DB_PASS }}
+
+      - name: Run connectivity test via Makefile
+        if: ${{ github.event.inputs.run_tests == 'true' && github.event.inputs.destroy == 'false' }}
+        run: make test
