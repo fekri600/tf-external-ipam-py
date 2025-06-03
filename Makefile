@@ -2,48 +2,6 @@
 .SHELLFLAGS = -e -o pipefail -c
 ENVIRONMENTS = staging production
 
-# === Conditional Bootstrap Check ===
-check-bootstrap:
-	@echo "🔍 Checking if bootstrap infrastructure is already in place..."
-	BACKEND_BUCKET_FILE=bootstrap/outputs/.backend_bucket
-	GITHUB_ROLE_FILE=bootstrap/outputs/.github_role
-
-	NEED_BOOTSTRAP=0
-
-	if [[ -f "$$BACKEND_BUCKET_FILE" ]]; then
-		BACKEND_BUCKET=$$(cat $$BACKEND_BUCKET_FILE)
-	else
-		BACKEND_BUCKET=$$(aws s3api list-buckets --query 'Buckets[?contains(Name, `terraform-backend`)].Name' --output text | head -n1 || true)
-	fi
-
-	if [[ -z "$$BACKEND_BUCKET" ]]; then
-		echo "❌ Terraform backend bucket not found."
-		NEED_BOOTSTRAP=1
-	else
-		echo "✅ Terraform backend bucket exists: $$BACKEND_BUCKET"
-	fi
-
-	if [[ -f "$$GITHUB_ROLE_FILE" ]]; then
-		GITHUB_ROLE=$$(basename $$(cat $$GITHUB_ROLE_FILE))
-	else
-		GITHUB_ROLE="GitHubOIDCTrustRole"
-	fi
-
-	if aws iam get-role --role-name "$$GITHUB_ROLE" >/dev/null 2>&1; then
-		echo "✅ GitHub OIDC role exists: $$GITHUB_ROLE"
-	else
-		echo "❌ GitHub OIDC role not found."
-		NEED_BOOTSTRAP=1
-	fi
-
-	if [[ $$NEED_BOOTSTRAP -eq 1 ]]; then
-		echo "🚧 Bootstrap is required."
-		exit 100
-	else
-		echo "✅ No bootstrap needed."
-	fi
-
-# === Bootstrap Setup ===
 bootstrap:
 	@echo "🔧 Deploying bootstrap ..."
 	cd bootstrap && terraform init && terraform apply -auto-approve
@@ -53,18 +11,21 @@ bootstrap:
 	cd bootstrap && terraform output -raw dynamodb_table_name > outputs/.backend_table
 	cd bootstrap && terraform output -raw region > outputs/.backend_region
 	cd bootstrap && echo "terraform/state/root.tfstate" > outputs/.key
-
+	
 	@echo "📦 Saving oidc details..."
+	
 	cd bootstrap && terraform output -raw TRUST_ROLE_GITHUB > outputs/.github_role
 
 	@echo "🛠️ Generating providers.tf..."
 	bash scripts/generate_provider_file.sh
 
-	@echo "✅ Bootstrap apply completed."
 
-# === Delete Bootstrap ===
+	@echo "✅ Apply completed."
+
+
 delete-bootstrap:
 	@echo "🗑️ Destroying GitHub bootstrap infrastructure..."
+	
 	cd bootstrap && terraform destroy -auto-approve
 
 	@echo "🧹 Cleaning up generated files..."
@@ -72,7 +33,10 @@ delete-bootstrap:
 
 	@echo "✅ Delete completed."
 
-# === Run Test and Fetch Logs ===
+
+
+
+
 test:
 	terraform init && terraform apply -auto-approve
 	@echo "📡 Waiting 20 seconds for logs to be delivered..."
@@ -80,7 +44,7 @@ test:
 
 	@echo "📡 Fetching CloudWatch logs for connectivity tests..."
 	@mkdir -p outputs
-	@for env in $(ENVIRONMENTS); do \
+	@for env in staging production; do \
 		echo "🔍 Environment: $$env"; \
 		LOG_GROUP="/aws/ssm/connectivity-$$env"; \
 		INSTANCE_TAG="i360moms-$$env-ec2"; \
