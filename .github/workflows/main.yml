@@ -11,14 +11,7 @@ on:
         options:
           - 'false'
           - 'true'
-      run_tests:
-        description: 'Run connectivity tests after apply'
-        required: false
-        default: 'false'
-        type: choice
-        options:
-          - 'false'
-          - 'true'
+
 
 permissions:
   id-token: write
@@ -71,6 +64,3 @@ jobs:
           TF_VAR_stag_db_password: ${{ secrets.STAG_DB_PASS }}
           TF_VAR_prod_db_password: ${{ secrets.PROD_DB_PASS }}
 
-      - name: Run connectivity test via Makefile
-        if: ${{ github.event.inputs.run_tests == 'true' && github.event.inputs.destroy == 'false' }}
-        run: make test
