@@ -26,7 +26,7 @@ permissions:
 
 jobs:
   terraform:
-    name: 'Terraform Apply'
+    name: 'Terraform CI/CD'
     runs-on: ubuntu-latest
 
     steps:
@@ -43,13 +43,28 @@ jobs:
       - name: Install Make
         run: sudo apt-get update && sudo apt-get install -y make
 
-      - name: Configure AWS credentials (DevOps role)
+      - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.TRUST_ROLE_GITHUB }}
           aws-region: us-east-1
           role-session-name: GitHubActions-${{ github.run_id }}
           role-duration-seconds: 3600
+
+      - name: Check if bootstrap is needed
+        id: bootstrap_check
+        continue-on-error: true
+        run: |
+          echo "📡 Running make check-bootstrap..."
+          if make check-bootstrap; then
+            echo "need_bootstrap=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "need_bootstrap=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Run bootstrap if needed
+        if: steps.bootstrap_check.outputs.need_bootstrap == 'true'
+        run: make bootstrap
 
       - name: Terraform Init
         run: terraform init
@@ -71,6 +86,6 @@ jobs:
           TF_VAR_stag_db_password: ${{ secrets.STAG_DB_PASS }}
           TF_VAR_prod_db_password: ${{ secrets.PROD_DB_PASS }}
 
-      - name: Run connectivity test via Makefile
+      - name: Run connectivity test
         if: ${{ github.event.inputs.run_tests == 'true' && github.event.inputs.destroy == 'false' }}
         run: make test
