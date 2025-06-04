@@ -114,7 +114,6 @@ Testing internet access...
 ## 🧰 Scripts
 
 Available helper scripts:
-- `scripts/connectivity-test.sh`: Validates runtime connectivity and IAM RDS authentication
 - `scripts/fetch_ssm_test_logs.sh`: Fetch logs from EC2 instances via SSM
 - `scripts/generate_provider_file.sh`: Generates provider configuration based on bootstrap outputs
 
@@ -127,8 +126,6 @@ infra_redesign_auto/
 ├── .github/
 │   └── workflows/
 │       └── main.yml
-├── .idea/
-├── .terraform/
 ├── bootstrap/
 │   ├── backend_setup/
 │   │   ├── main.tf
@@ -168,10 +165,6 @@ infra_redesign_auto/
 │   ├── fetch_ssm_test_logs.sh
 │   ├── generate_provider_file.sh
 │   └── user_data.sh.tmpl
-├── .gitignore
-├── terraform.tfstate
-├── terraform.tfstate.backup
-├── terraform.auto.tfvars
 ├── production.auto.tfvars
 ├── staging.auto.tfvars
 ├── providers.tf
@@ -179,8 +172,7 @@ infra_redesign_auto/
 ├── variables.tf
 ├── locals.tf
 ├── main.tf
-├── Makefile
-└── README.md
+└── Makefile
 ```
 
 ---
