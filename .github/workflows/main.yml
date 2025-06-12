@@ -65,8 +65,11 @@ jobs:
           for ENV in "${ENVIRONMENTS[@]}"; do
             echo "🚀 Deploying environment: $ENV"
 
+            # ✅ First: initialize Terraform backend
+            terraform init -input=false -reconfigure
+
+            # ✅ Then: select or create workspace
             terraform workspace select $ENV || terraform workspace new $ENV
-            terraform init
 
             terraform fmt -check
             terraform validate
@@ -77,6 +80,7 @@ jobs:
               terraform apply -auto-approve -var-file="$ENV.tfvars"
             fi
           done
+
         env:
           STAG_PASS: ${{ secrets.STAG_DB_PASS }}
           PROD_PASS: ${{ secrets.PROD_DB_PASS }}
