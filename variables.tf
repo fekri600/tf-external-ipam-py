@@ -94,12 +94,7 @@ variable "load_balancer" {
 variable "launch_template" {
   description = "Launch template configuration for staging and production"
   type = object({
-    staging = object({
-      architecture  = string
-      storage       = string
-      instance_type = string
-    })
-    production = object({
+    environment = object({
       architecture  = string
       storage       = string
       instance_type = string
@@ -113,16 +108,7 @@ variable "launch_template" {
 variable "autoscaling" {
   description = "Auto Scaling configuration for staging and production"
   type = object({
-    staging = object({
-      desired_capacity          = number
-      max_size                  = number
-      min_size                  = number
-      health_check_type         = string
-      health_check_grace_period = number
-      version                   = string
-      propagate_at_launch       = bool
-    })
-    production = object({
+    environment = object({
       desired_capacity          = number
       max_size                  = number
       min_size                  = number
@@ -141,19 +127,7 @@ variable "autoscaling" {
 variable "database" {
   description = "RDS instance settings for staging and production"
   type = object({
-    staging = object({
-      engine                  = string
-      instance_class          = string
-      initial_storage         = number
-      username                = string
-      password                = string
-      delete_automated_backup = bool
-      iam_authentication      = bool
-      multi_az                = bool
-      backup_retention_period = number
-      backup_window           = string
-    })
-    production = object({
+    environment = object({
       engine                  = string
       instance_class          = string
       initial_storage         = number
@@ -177,14 +151,7 @@ variable "database" {
 variable "redis" {
   description = "ElastiCache Redis configuration for staging and production"
   type = object({
-    staging = object({
-      node_type = string
-      redis_settings = object({
-        engine             = string
-        num_cache_clusters = number
-      })
-    })
-    production = object({
+    environment = object({
       node_type = string
       redis_settings = object({
         engine             = string
