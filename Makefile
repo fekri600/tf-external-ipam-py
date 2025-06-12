@@ -2,7 +2,7 @@
 .SHELLFLAGS = -e -o pipefail -c
 ENVIRONMENTS = staging production
 
-bootstrap:
+deploy-bootstrap:
 	@echo "🔧 Deploying bootstrap ..."
 	cd bootstrap && terraform init && terraform apply -auto-approve
 
