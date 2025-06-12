@@ -50,11 +50,11 @@ variable "logs" {
 variable "dashboard_config" {
   description = "Configuration for CloudWatch dashboards"
   type = object({
-    create_combined_dashboard = bool
+    create_combined_dashboard  = bool
     create_separate_dashboards = bool
   })
   default = {
-    create_combined_dashboard = true
+    create_combined_dashboard  = true
     create_separate_dashboards = false
   }
 }

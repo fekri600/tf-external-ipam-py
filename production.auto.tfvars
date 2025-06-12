@@ -199,10 +199,10 @@ logs = {
 
   group_paths = {
     application      = "/aws/ec2/application"
-    nginx           = "/aws/ec2/nginx"
-    system          = "/aws/ec2/system"
-    rds             = "/aws/rds/mysql-logs"
-    redis           = "/aws/elasticache/redis-logs"
+    nginx            = "/aws/ec2/nginx"
+    system           = "/aws/ec2/system"
+    rds              = "/aws/rds/mysql-logs"
+    redis            = "/aws/elasticache/redis-logs"
     ssm_connectivity = "/aws/ssm/connectivity"
   }
 
