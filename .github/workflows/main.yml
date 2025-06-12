@@ -76,9 +76,9 @@ jobs:
             terraform validate
 
             if [[ "${{ github.event.inputs.destroy }}" == "true" ]]; then
-              terraform destroy -auto-approve -var-file="$ENV.tfvars"
+              terraform destroy -auto-approve -var-file="$ENV.auto.tfvars"
             else
-              terraform apply -auto-approve -var-file="$ENV.tfvars"
+              terraform apply -auto-approve -var-file="$ENV.auto.tfvars"
             fi
           done
 
