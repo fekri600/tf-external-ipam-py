@@ -1,6 +1,6 @@
 module "network" {
   source           = "./modules/network"
-  environment      = "network"
+  environment      = terraform.workspace
   prefix           = local.name_prefix
   project_settings = var.project_settings
   network          = var.network
