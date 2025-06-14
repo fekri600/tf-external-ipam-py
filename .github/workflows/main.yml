@@ -71,8 +71,6 @@ jobs:
             # ✅ Then: select or create workspace
             terraform workspace select $ENV || terraform workspace new $ENV
 
-            terraform fmt -check || echo "⚠️ Format check failed. Please run 'terraform fmt' locally."
-
             terraform validate
 
             if [[ "${{ github.event.inputs.destroy }}" == "true" ]]; then
