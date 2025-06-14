@@ -1,20 +1,13 @@
-# ======================
-# Project Configuration
-# ======================
 variable "project_settings" {
-  description = "Project and region configuration"
+  description = "Project configuration settings"
   type = object({
     project    = string
     aws_region = string
   })
 }
 
-
-# ======================
-# Network Configuration
-# ======================
 variable "network" {
-  description = "VPC and subnet configuration"
+  description = "Network configuration settings"
   type = object({
     enable_dns_support       = bool
     enable_dns_hostnames     = bool
@@ -27,11 +20,42 @@ variable "network" {
   })
 }
 
-# ==========================
-# Securty Groups Configuration
-# ==========================
+variable "load_balancer" {
+  description = "Load balancer configuration settings"
+  type = object({
+    alb_settings = object({
+      internal                   = bool
+      enable_deletion_protection = bool
+      load_balancer_type         = string
+    })
+    lb_target_group = object({
+      port     = number
+      protocol = string
+    })
+    lb_health_check = object({
+      path                = string
+      interval            = number
+      timeout             = number
+      healthy_threshold   = number
+      unhealthy_threshold = number
+      matcher             = string
+    })
+    listener = object({
+      port = object({
+        http  = number
+        https = number
+      })
+      protocol = object({
+        http  = string
+        https = string
+      })
+      action_type = string
+    })
+  })
+}
+
 variable "security_groups" {
-  description = "Security Groups configuration: ports and protocols"
+  description = "Security groups configuration"
   type = object({
     port = object({
       http  = number
@@ -47,128 +71,94 @@ variable "security_groups" {
   })
 }
 
-
-
-# ==========================
-# Load Balancer Configuration
-# ==========================
-variable "load_balancer" {
-  description = "ALB settings, listener, target group and health check"
-  type = object({
-    alb_settings = object({
-      internal                   = bool
-      enable_deletion_protection = bool
-      load_balancer_type         = string
-    })
-
-    lb_target_group = object({
-      port     = number
-      protocol = string
-    })
-
-    lb_health_check = object({
-      path                = string
-      interval            = number
-      timeout             = number
-      healthy_threshold   = number
-      unhealthy_threshold = number
-      matcher             = string
-    })
-
-    listener = object({
-      port = object({
-        http  = number
-        https = number
-      })
-      protocol = object({
-        http  = string
-        https = string
-      })
-      action_type = string
-    })
-  })
-}
-# ==========================
-# Launch Template Variable
-# ==========================
 variable "launch_template" {
-  description = "Launch template configuration for staging and production"
-  type = object({
-    environment = object({
-      architecture  = string
-      storage       = string
-      instance_type = string
-    })
-  })
+  description = "Launch template settings per environment"
+  type = map(object({
+    architecture  = string
+    storage       = string
+    instance_type = string
+  }))
 }
 
-# ==========================
-# Auto Scaling Configuration
-# ==========================
 variable "autoscaling" {
-  description = "Auto Scaling configuration for staging and production"
-  type = object({
-    environment = object({
-      desired_capacity          = number
-      max_size                  = number
-      min_size                  = number
-      health_check_type         = string
-      health_check_grace_period = number
-      version                   = string
-      propagate_at_launch       = bool
-    })
-  })
+  description = "Auto Scaling configuration per environment"
+  type = map(object({
+    desired_capacity          = number
+    max_size                  = number
+    min_size                  = number
+    health_check_type         = string
+    health_check_grace_period = number
+    version                   = string
+    propagate_at_launch       = bool
+  }))
 }
 
-
-# ====================
-# Database Settings
-# ====================
 variable "database" {
-  description = "RDS instance settings for staging and production"
-  type = object({
-    environment = object({
-      engine                  = string
-      instance_class          = string
-      initial_storage         = number
-      username                = string
-      password                = string
-      delete_automated_backup = bool
-      iam_authentication      = bool
-      multi_az                = bool
-      backup_retention_period = number
-      backup_window           = string
-    })
-  })
-  sensitive = true
+  description = "Database settings per environment"
+  type = map(object({
+    engine                  = string
+    instance_class          = string
+    initial_storage         = number
+    username                = string
+    password                = string
+    delete_automated_backup = bool
+    iam_authentication      = bool
+    multi_az                = bool
+    backup_retention_period = number
+    backup_window           = string
+  }))
 }
 
-
-
-# ====================
-# Redis Configuration
-# ====================
 variable "redis" {
-  description = "ElastiCache Redis configuration for staging and production"
-  type = object({
-    environment = object({
-      node_type = string
-      redis_settings = object({
-        engine             = string
-        num_cache_clusters = number
-      })
+  description = "ElastiCache Redis settings per environment"
+  type = map(object({
+    node_type      = string
+    redis_settings = object({
+      engine             = string
+      num_cache_clusters = number
     })
-  })
+  }))
 }
 
 variable "alarm" {
   description = "CloudWatch alarm configuration"
   type = object({
-    namespace = map(string)
-    metric    = map(string)
-    threshold = map(number)
-    dim       = map(string)
-    attr      = map(string)
+    namespace = object({
+      ec2   = string
+      rds   = string
+      redis = string
+      logs  = string
+    })
+    metric = object({
+      cpu        = string
+      memory     = string
+      conn       = string
+      redis_conn = string
+      nginx_5xx  = string
+      rds_error  = string
+      redis_err  = string
+      app_error  = string
+    })
+    threshold = object({
+      cpu        = number
+      memory     = number
+      conn       = number
+      redis_conn = number
+      nginx_5xx  = number
+      rds_error  = number
+      redis_err  = number
+      app_error  = number
+    })
+    dim = object({
+      ec2   = string
+      rds   = string
+      redis = string
+    })
+    attr = object({
+      ec2   = string
+      rds   = string
+      redis = string
+    })
     common_settings = object({
       comparison_operator = string
       evaluation_periods  = number
@@ -180,18 +170,30 @@ variable "alarm" {
 }
 
 variable "logs" {
-  description = "CloudWatch log configuration for all services"
+  description = "CloudWatch Logs configuration"
   type = object({
     retention_in_days = number
     log_group_prefix  = map(string)
-    group_paths       = map(string)
+    group_paths       = object({
+      application      = string
+      nginx            = string
+      system           = string
+      rds              = string
+      redis            = string
+      ssm_connectivity = string
+    })
     filters = object({
       pattern = object({
         error  = string
         status = string
       })
       transformation = object({
-        name      = map(string)
+        name = object({
+          app   = string
+          nginx = string
+          rds   = string
+          redis = string
+        })
         namespace = string
         value     = string
       })
@@ -200,19 +202,9 @@ variable "logs" {
 }
 
 variable "dashboard_config" {
-  description = "Configuration for CloudWatch dashboards"
+  description = "Dashboard creation settings"
   type = object({
     create_combined_dashboard  = bool
     create_separate_dashboards = bool
   })
-  default = {
-    create_combined_dashboard  = true
-    create_separate_dashboards = false
-  }
 }
-
-
-
-
-
-
