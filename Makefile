@@ -10,7 +10,7 @@ deploy-bootstrap:
 	cd bootstrap && terraform output -raw bucket_name > outputs/.backend_bucket
 	cd bootstrap && terraform output -raw dynamodb_table_name > outputs/.backend_table
 	cd bootstrap && terraform output -raw region > outputs/.backend_region
-	cd bootstrap && echo 'terraform/state/root.tfstate' > outputs/.key
+	cd bootstrap && echo 'terraform/state/${terraform.workspace}.tfstate' > outputs/.key
 
 	@echo "📦 Saving oidc details..."
 	
