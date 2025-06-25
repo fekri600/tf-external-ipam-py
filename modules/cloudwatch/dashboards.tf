@@ -2,7 +2,7 @@
 
 resource "aws_cloudwatch_dashboard" "environment" {
 
-  dashboard_name = "${each.key}-dashboard"
+  dashboard_name = "${var.environment}-dashboard"
 
   dashboard_body = jsonencode({
     widgets = concat(
@@ -14,7 +14,7 @@ resource "aws_cloudwatch_dashboard" "environment" {
           width  = 24
           height = 1
           properties = {
-            markdown = "# ${title(each.key)} Environment Dashboard"
+            markdown = "# ${title(var.environment)} Environment Dashboard"
           }
         }
       ],
@@ -32,7 +32,7 @@ resource "aws_cloudwatch_dashboard" "environment" {
             region  = w.region
             title   = w.title
           }
-        } if split(" ", w.title)[0] == each.key
+        } if split(" ", w.title)[0] == var.environment
       ]
     )
   })
