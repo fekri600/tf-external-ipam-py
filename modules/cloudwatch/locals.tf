@@ -28,9 +28,9 @@ locals {
   # Generate log metric filters for all defined log groups
   log_metric_filters = {
     for key, lg in local.log_groups : key => {
-      log_group_name   = lg.full_name
+      log_group_name   = lg
       pattern          = var.logs.filters.pattern.error
-      metric_name      = "${split("/", lg.full_name)[length(split("/", lg.full_name)) - 1]}-error"
+      metric_name      = "${split("/", lg)[length(split("/", lg)) - 1]}-error"
       metric_namespace = var.logs.filters.transformation.namespace
       metric_value     = var.logs.filters.transformation.value
     }

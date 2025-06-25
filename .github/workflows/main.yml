@@ -8,10 +8,10 @@ on:
         required: true
         type: choice
         options:
+          - both
           - staging
           - production
-          - both
-
+          
       destroy:
         description: 'Set true to destroy the environment'
         required: false
