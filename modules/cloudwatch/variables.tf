@@ -31,7 +31,6 @@ variable "logs" {
   description = "CloudWatch log configuration for all services"
   type = object({
     retention_in_days = number
-    log_group_prefix  = map(string)
     group_paths       = map(string)
     filters = object({
       pattern = object({
@@ -59,6 +58,6 @@ variable "dashboard_config" {
   }
 }
 
-
+variable "environment" { type = string }
 
 

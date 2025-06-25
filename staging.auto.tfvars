@@ -192,11 +192,6 @@ alarm = {
 # ====================
 logs = {
   retention_in_days = 7
-
-  log_group_prefix = {
-    staging = "staging"
-  }
-
   group_paths = {
     application      = "/aws/ec2/application"
     nginx            = "/aws/ec2/nginx"

@@ -173,7 +173,6 @@ variable "logs" {
   description = "CloudWatch Logs configuration"
   type = object({
     retention_in_days = number
-    log_group_prefix  = map(string)
     group_paths       = object({
       application      = string
       nginx            = string

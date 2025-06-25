@@ -192,11 +192,6 @@ alarm = {
 # ====================
 logs = {
   retention_in_days = 30
-
-  log_group_prefix = {
-    production = "production"
-  }
-
   group_paths = {
     application      = "/aws/ec2/application"
     nginx            = "/aws/ec2/nginx"

@@ -63,7 +63,7 @@ jobs:
           fi
 
           for ENV in "${ENVIRONMENTS[@]}"; do
-            echo "🚀 Deploying environment: $ENV"
+            echo "Deploying environment: $ENV"
 
             # ✅ First: initialize Terraform backend
             terraform init -input=false -reconfigure

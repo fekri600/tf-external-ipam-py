@@ -43,6 +43,7 @@ module "cloudwatch" {
   alarm            = var.alarm
   logs             = var.logs
   dashboard_config = var.dashboard_config
+  environment      = terraform.workspace 
   env_configs = {
     (terraform.workspace) = {
       asg_name = module.environment.asg_name

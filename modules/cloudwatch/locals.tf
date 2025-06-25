@@ -16,12 +16,9 @@ locals {
   ]...)
 
   nested_log_groups = {
-    for env in keys(var.logs.log_group_prefix) :
-    env => {
-      for log_key, base_path in var.logs.group_paths :
-      "${env}_${log_key}" => {
-        full_name = "${base_path}-${var.logs.log_group_prefix[env]}"
-      }
+    for log_key, base_path in var.logs.group_paths :
+    "${var.environment}_${log_key}" => {
+      full_name = "${base_path}-${var.logs.log_group_prefix[var.environment]}"
     }
   }
 
@@ -40,21 +37,19 @@ locals {
   }
 
   # Build specs for the four log‑metric alarms in every environment
-  log_alarm_specs = merge([
-    for env, prefix in var.logs.log_group_prefix : {
-      for name, metric in var.alarm.metric :
-      "${env}_${name}" => {
-        env         = env
-        alarm_name  = "${prefix}-${metric}"
-        metric_name = metric
-        threshold   = var.alarm.threshold[name]
-      }
-      if startswith(name, "nginx_")
-      || startswith(name, "rds_")
-      || startswith(name, "redis_")
-      || startswith(name, "app_")
+  log_alarm_specs = {
+    for name, metric in var.alarm.metric :
+    "${var.environment}_${name}" => {
+      env         = var.environment
+      alarm_name  = "${var.environment}-${metric}"
+      metric_name = metric
+      threshold   = var.alarm.threshold[name]
     }
-  ]...)
+    if startswith(name, "nginx_")
+    || startswith(name, "rds_")
+    || startswith(name, "redis_")
+    || startswith(name, "app_")
+  }
   metric_widgets = flatten([
     for name, spec in local.alarm_specs : [
       for env, cfg in var.env_configs : {
