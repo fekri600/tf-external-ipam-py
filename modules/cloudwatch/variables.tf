@@ -47,6 +47,7 @@ variable "logs" {
 }
 
 
+
 variable "environment" { type = string }
 
 

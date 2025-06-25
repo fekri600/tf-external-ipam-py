@@ -1,7 +1,6 @@
 
 
 resource "aws_cloudwatch_dashboard" "environment" {
-  for_each = var.dashboard_config.create_separate_dashboards ? var.env_configs : {}
 
   dashboard_name = "${each.key}-dashboard"
 
