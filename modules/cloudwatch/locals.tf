@@ -18,7 +18,7 @@ locals {
   nested_log_groups = {
     for log_key, base_path in var.logs.group_paths :
     "${var.environment}_${log_key}" => {
-      full_name = "${base_path}-${var.logs.log_group_prefix[var.environment]}"
+      full_name = "${base_path}-${var.environment}"
     }
   }
 
