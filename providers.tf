@@ -10,7 +10,7 @@ terraform {
 
   backend "s3" {
     bucket         = "backend-s3-bucket-1290"
-    key            = "terraform/state/${terraform.workspace}.tfstate"
+    key            = "terraform/state/.tfstate"
     region         = "us-east-1"
     dynamodb_table = "backend-d-db-table"
     encrypt        = true
