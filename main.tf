@@ -42,7 +42,6 @@ module "cloudwatch" {
   aws_region       = var.project_settings.aws_region
   alarm            = var.alarm
   logs             = var.logs
-  dashboard_config = var.dashboard_config
   environment      = terraform.workspace 
   env_configs = {
     (terraform.workspace) = {

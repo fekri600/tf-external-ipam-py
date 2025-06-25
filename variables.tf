@@ -200,10 +200,4 @@ variable "logs" {
   })
 }
 
-variable "dashboard_config" {
-  description = "Dashboard creation settings"
-  type = object({
-    create_combined_dashboard  = bool
-    create_separate_dashboards = bool
-  })
-}
+

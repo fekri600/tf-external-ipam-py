@@ -198,7 +198,6 @@ logs = {
     system           = "/aws/ec2/system"
     rds              = "/aws/rds/mysql-logs"
     redis            = "/aws/elasticache/redis-logs"
-    ssm_connectivity = "/aws/ssm/connectivity"
   }
 
   filters = {
@@ -220,10 +219,3 @@ logs = {
   }
 }
 
-# ====================
-# Dashboard Configuration
-# ====================
-dashboard_config = {
-  create_combined_dashboard  = false
-  create_separate_dashboards = true
-} 
