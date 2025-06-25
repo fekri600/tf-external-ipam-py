@@ -179,7 +179,6 @@ variable "logs" {
       system           = string
       rds              = string
       redis            = string
-      ssm_connectivity = string
     })
     filters = object({
       pattern = object({
