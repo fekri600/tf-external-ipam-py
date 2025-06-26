@@ -1,14 +1,15 @@
 variable "project_settings" {
   description = "Project configuration settings"
   type = object({
-    project    = string
-    aws_region = string
+    project     = string
+    aws_region  = string
+    name_prefix = string
   })
 }
 
 variable "network" {
-  description = "Network configuration settings"
-  type = object({
+  description = "Network configuration settings per environment with global flags"
+  type = map(object({
     enable_dns_support       = bool
     enable_dns_hostnames     = bool
     vpc_cidr                 = string
@@ -17,8 +18,9 @@ variable "network" {
     availability_zones       = list(string)
     eip_domain               = string
     default_route_cidr_block = string
-  })
+  }))
 }
+
 
 variable "load_balancer" {
   description = "Load balancer configuration settings"
@@ -112,7 +114,7 @@ variable "database" {
 variable "redis" {
   description = "ElastiCache Redis settings per environment"
   type = map(object({
-    node_type      = string
+    node_type = string
     redis_settings = object({
       engine             = string
       num_cache_clusters = number
@@ -173,12 +175,12 @@ variable "logs" {
   description = "CloudWatch Logs configuration"
   type = object({
     retention_in_days = number
-    group_paths       = object({
-      application      = string
-      nginx            = string
-      system           = string
-      rds              = string
-      redis            = string
+    group_paths = object({
+      application = string
+      nginx       = string
+      system      = string
+      rds         = string
+      redis       = string
     })
     filters = object({
       pattern = object({

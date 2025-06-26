@@ -1,6 +1,6 @@
 
 # Create an ALB Target Group with health checks configured
-resource "aws_lb_target_group" "nginx" {
+resource "aws_lb_target_group" "tg" {
   name     = "${var.prefix}-${var.environment}-tg"
   port     = var.load_balancer.lb_target_group.port
   protocol = var.load_balancer.lb_target_group.protocol
@@ -21,7 +21,7 @@ resource "aws_lb_target_group" "nginx" {
 }
 
 # Create the Application Load Balancer (ALB)
-resource "aws_lb" "nginx" {
+resource "aws_lb" "alb" {
   name                       = "${var.prefix}-${var.environment}-alb"
   load_balancer_type         = var.load_balancer.alb_settings.load_balancer_type
   security_groups            = [aws_security_group.alb.id]
@@ -36,25 +36,25 @@ resource "aws_lb" "nginx" {
 
 # Create a listener on the ALB for incoming HTTP/HTTPS traffic
 resource "aws_lb_listener" "http" {
-  load_balancer_arn = aws_lb.nginx.arn
+  load_balancer_arn = aws_lb.alb.arn
   port              = var.load_balancer.listener.port.http
   protocol          = var.load_balancer.listener.protocol.http
 
   default_action {
     type             = var.load_balancer.listener.action_type
-    target_group_arn = aws_lb_target_group.nginx.arn
+    target_group_arn = aws_lb_target_group.tg.arn
   }
 }
 
 # resource "aws_lb_listener" "https" {
-#   load_balancer_arn = aws_lb.nginx.arn
+#   load_balancer_arn = aws_lb.alb.arn
 #   port              = var.load_balancer.listener.port.https
 #   protocol          = var.load_balancer.listener.protocol.https
 #   ssl_policy        = "ELBSecurityPolicy-2016-08"
 #   certificate_arn   = aws_acm_certificate.cert.arn
 #   default_action {
 #     type             = var.load_balancer.listener.action_type
-#     target_group_arn = aws_lb_target_group.nginx.arn
+#     target_group_arn = aws_lb_target_group.tg.arn
 #   }
 # }
 

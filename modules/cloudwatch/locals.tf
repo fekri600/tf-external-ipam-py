@@ -21,16 +21,31 @@ locals {
       full_name = "${base_path}-${var.environment}"
     }
   }
+  
+  # These are the log group base paths managed by the agent
+  excluded_log_group_prefixes = [
+    var.logs.group_paths.application,
+    var.logs.group_paths.nginx,
+    var.logs.group_paths.system
+  ]
 
-  # Flatten all environment-specific log groups into one map
-  log_groups = merge(values(local.nested_log_groups)...)
+  log_groups_to_create = {
+    for key, value in local.nested_log_groups :
+    key => value
+    if !contains(local.excluded_log_group_prefixes, replace(value.full_name, "-${var.environment}", ""))
+  }
+
+  
+
+  # Use the nested log groups directly
+  log_groups = local.nested_log_groups
 
   # Generate log metric filters for all defined log groups
   log_metric_filters = {
     for key, lg in local.log_groups : key => {
-      log_group_name   = lg
+      log_group_name   = lg.full_name
       pattern          = var.logs.filters.pattern.error
-      metric_name      = "${split("/", lg)[length(split("/", lg)) - 1]}-error"
+      metric_name      = "${split("/", lg.full_name)[length(split("/", lg.full_name)) - 1]}-error"
       metric_namespace = var.logs.filters.transformation.namespace
       metric_value     = var.logs.filters.transformation.value
     }

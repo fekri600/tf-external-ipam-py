@@ -3,7 +3,7 @@ module "network" {
   environment      = terraform.workspace
   prefix           = local.name_prefix
   project_settings = var.project_settings
-  network          = var.network
+  network          = var.network[terraform.workspace]
   load_balancer    = var.load_balancer
   security_groups  = var.security_groups
 }
@@ -38,11 +38,11 @@ module "environment" {
 }
 
 module "cloudwatch" {
-  source           = "./modules/cloudwatch"
-  aws_region       = var.project_settings.aws_region
-  alarm            = var.alarm
-  logs             = var.logs
-  environment      = terraform.workspace 
+  source      = "./modules/cloudwatch"
+  aws_region  = var.project_settings.aws_region
+  alarm       = var.alarm
+  logs        = var.logs
+  environment = terraform.workspace
   env_configs = {
     (terraform.workspace) = {
       asg_name = module.environment.asg_name

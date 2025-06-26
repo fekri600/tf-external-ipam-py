@@ -6,25 +6,16 @@ set -xe
 # ==========
 region="${region}"
 log_group_prefix="${log_group_prefix}"
-db_user="${db_user}"
-db_port="${db_port}"
-db_host="rds-${log_group_prefix}.xxxxxxxx.${region}.rds.amazonaws.com"
+
 
 # ==========
 # INSTALL TOOLS
 # ==========
 
-# MySQL setup
-rpm -Uvh https://repo.mysql.com/mysql80-community-release-el7-3.noarch.rpm
-rpm --import https://repo.mysql.com/RPM-GPG-KEY-mysql-2022
-sudo yum install -y mysql-community-client --nogpgcheck || echo "❌ Failed to install MySQL client" >> /var/log/application.log
-
 # Other tools
 amazon-linux-extras install -y nginx1
-yum install -y docker || echo "⚠️ Failed to install Docker" >> /var/log/application.log
 yum install -y amazon-cloudwatch-agent || echo "⚠️ Failed to install CloudWatch Agent" >> /var/log/application.log
 yum install -y awscli curl || echo "⚠️ Failed to install awscli/curl" >> /var/log/application.log
-yum install -y nmap-ncat || echo "⚠️ Failed to install Netcat" >> /var/log/application.log
 
 # ==========
 # SETUP LOG FILES
@@ -34,34 +25,7 @@ mkdir -p $(dirname $LOG_FILE)
 touch $LOG_FILE
 chmod 644 $LOG_FILE
 echo "Application started on $(date)" >> $LOG_FILE
-
-ssm_logs="/tmp/connectivity_test.log"
-mkdir -p $(dirname $ssm_logs)
-touch $ssm_logs
-chmod 644 $ssm_logs
-echo "ssm connectivity test started on $(date)" >> $ssm_logs
-
-# ==========
-# RDS IAM Auth Test
-# ==========
-echo "Testing RDS IAM Authentication..." >> $LOG_FILE
-
-token=$(aws rds generate-db-auth-token \
-  --hostname "$db_host" \
-  --port "$db_port" \
-  --region "$region" \
-  --username "$db_user")
-
-if [ -z "$token" ]; then
-  echo "❌ Failed to generate RDS IAM token" >> $LOG_FILE
-else
-  mysql -h "$db_host" \
-    -u "$db_user" \
-    --password="$token" \
-    --enable-cleartext-plugin \
-    -e "SELECT NOW();" >> $LOG_FILE 2>&1 || echo "❌ IAM RDS auth failed" >> $LOG_FILE
-fi
-
+echo "Nginx started on $(date)" >> "/var/log/nginx/access.log"
 # ==========
 # CLOUDWATCH CONFIG
 # ==========
@@ -96,11 +60,6 @@ cat > /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json <<EOF
             "log_stream_name": "{instance_id}-app"
           },
           {
-            "file_path": "/var/log/connectivity_test.log",
-            "log_group_name": "/aws/ssm/connectivity-${log_group_prefix}",
-            "log_stream_name": "{instance_id}-ssm"
-          },
-          {
             "file_path": "/var/log/cloud-init-output.log",
             "log_group_name": "/aws/ec2/system-${log_group_prefix}",
             "log_stream_name": "{instance_id}-cloud-init"
@@ -129,10 +88,6 @@ cat > /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json <<EOF
 }
 EOF
 
-# ==========
-# CREATE TEST WEB PAGE
-# ==========
-echo "<html><body><h1>Environment: ${log_group_prefix}</h1></body></html>" > /usr/share/nginx/html/index.html
 
 # ==========
 # START SERVICES

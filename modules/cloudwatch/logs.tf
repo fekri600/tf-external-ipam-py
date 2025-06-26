@@ -1,8 +1,8 @@
 # Create all required CloudWatch Log Groups
 resource "aws_cloudwatch_log_group" "this" {
-  for_each = local.log_groups
+  for_each = local.log_groups_to_create
 
-  name              = each.value
+  name              = each.value.full_name
   retention_in_days = var.logs.retention_in_days
   tags = {
     VpcId = var.vpc_id

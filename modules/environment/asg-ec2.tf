@@ -38,18 +38,6 @@ resource "aws_iam_role_policy_attachment" "ssm" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
 }
 
-resource "aws_iam_policy" "ssm_logging" {
-  name   = "${var.prefix}-${var.environment}-ssm-logging"
-  policy = file("${var.policies_path}/ssm_logging_policy.json")
-}
-
-resource "aws_iam_role_policy_attachment" "ssm_logging" {
-  role       = aws_iam_role.ec2_role.name
-  policy_arn = aws_iam_policy.ssm_logging.arn
-}
-
-
-
 resource "aws_iam_instance_profile" "ec2_profile" {
   name = "${var.prefix}-${var.environment}-ec2-profile"
   role = aws_iam_role.ec2_role.name
@@ -69,8 +57,6 @@ resource "aws_launch_template" "this" {
 
   user_data = base64encode(templatefile("${var.scripts_path}/user_data.sh.tmpl", {
     log_group_prefix = var.environment,
-    db_user          = var.database.username,
-    db_port          = var.security_groups.port.mysql
     region           = var.project_settings.aws_region
   }))
 

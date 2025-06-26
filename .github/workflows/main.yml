@@ -62,11 +62,11 @@ jobs:
             ENVIRONMENTS=("${{ github.event.inputs.environment }}")
           fi
 
+          # ✅ First: initialize Terraform backend
+          terraform init -input=false -reconfigure
+
           for ENV in "${ENVIRONMENTS[@]}"; do
             echo "Deploying environment: $ENV"
-
-            # ✅ First: initialize Terraform backend
-            terraform init -input=false -reconfigure
 
             # ✅ Then: select or create workspace
             terraform workspace select $ENV || terraform workspace new $ENV
@@ -74,9 +74,9 @@ jobs:
             terraform validate
 
             if [[ "${{ github.event.inputs.destroy }}" == "true" ]]; then
-              terraform destroy -auto-approve -var-file="$ENV.auto.tfvars"
+              terraform destroy -auto-approve"
             else
-              terraform apply -auto-approve -var-file="$ENV.auto.tfvars"
+              terraform apply -auto-approve"
             fi
           done
 
