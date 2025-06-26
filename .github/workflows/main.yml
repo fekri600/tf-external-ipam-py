@@ -74,9 +74,9 @@ jobs:
             terraform validate
 
             if [[ "${{ github.event.inputs.destroy }}" == "true" ]]; then
-              terraform destroy -auto-approve"
+              terraform destroy -auto-approve
             else
-              terraform apply -auto-approve"
+              terraform apply -auto-approve
             fi
           done
 
