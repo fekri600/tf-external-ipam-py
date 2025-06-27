@@ -1,0 +1,85 @@
+name: Terraform Deployment to AWS
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Select the environment to deploy'
+        required: true
+        type: choice
+        options:
+          - both
+          - staging
+          - production
+          
+      destroy:
+        description: 'Set true to destroy the environment'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  terraform:
+    name: 'Terraform Apply or Destroy'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.11.4
+
+      - name: Install Make (optional)
+        run: sudo apt-get update && sudo apt-get install -y make
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.TRUST_ROLE_GITHUB }}
+          aws-region: us-east-1
+          role-session-name: GitHubActions-${{ github.run_id }}
+          role-duration-seconds: 3600
+
+      - name: Run Terraform for selected environment(s)
+        run: |
+          set -euo pipefail
+
+          if [[ "${{ github.event.inputs.environment }}" == "both" ]]; then
+            ENVIRONMENTS=("staging" "production")
+          else
+            ENVIRONMENTS=("${{ github.event.inputs.environment }}")
+          fi
+
+          # ✅ First: initialize Terraform backend
+          terraform init -input=false -reconfigure
+
+          for ENV in "${ENVIRONMENTS[@]}"; do
+            echo "Deploying environment: $ENV"
+
+            # ✅ Then: select or create workspace
+            terraform workspace select $ENV || terraform workspace new $ENV
+
+            terraform validate
+
+            if [[ "${{ github.event.inputs.destroy }}" == "true" ]]; then
+              terraform destroy -auto-approve
+            else
+              terraform apply -auto-approve
+            fi
+          done
+
+        env:
+          STAG_PASS: ${{ secrets.STAG_DB_PASS }}
+          PROD_PASS: ${{ secrets.PROD_DB_PASS }}
