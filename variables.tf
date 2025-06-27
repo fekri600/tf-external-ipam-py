@@ -12,13 +12,14 @@ variable "network" {
   type = map(object({
     enable_dns_support       = bool
     enable_dns_hostnames     = bool
-    vpc_cidr                 = string
-    public_subnets           = list(string)
-    private_subnets          = list(string)
     availability_zones       = list(string)
     eip_domain               = string
     default_route_cidr_block = string
   }))
+}
+
+variable "network_cidr" {
+  type = string
 }
 
 

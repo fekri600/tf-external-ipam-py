@@ -21,7 +21,7 @@ locals {
       full_name = "${base_path}-${var.environment}"
     }
   }
-  
+
   # These are the log group base paths managed by the agent
   excluded_log_group_prefixes = [
     var.logs.group_paths.application,
@@ -35,7 +35,7 @@ locals {
     if !contains(local.excluded_log_group_prefixes, replace(value.full_name, "-${var.environment}", ""))
   }
 
-  
+
 
   # Use the nested log groups directly
   log_groups = local.nested_log_groups

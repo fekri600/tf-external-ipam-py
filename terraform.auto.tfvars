@@ -14,9 +14,6 @@ network = {
   staging = {
     enable_dns_support       = true
     enable_dns_hostnames     = true
-    vpc_cidr                 = "10.0.0.0/16"
-    public_subnets           = ["10.0.1.0/24", "10.0.2.0/24"]
-    private_subnets          = ["10.0.11.0/24", "10.0.12.0/24"]
     availability_zones       = ["us-east-1a", "us-east-1b"]
     eip_domain               = "vpc"
     default_route_cidr_block = "0.0.0.0/0"
@@ -25,14 +22,13 @@ network = {
   production = {
     enable_dns_support       = true
     enable_dns_hostnames     = true
-    vpc_cidr                 = "10.1.0.0/16"
-    public_subnets           = ["10.1.1.0/24", "10.1.2.0/24"]
-    private_subnets          = ["10.1.11.0/24", "10.1.12.0/24"]
     availability_zones       = ["us-east-1a", "us-east-1b"]
     eip_domain               = "vpc"
     default_route_cidr_block = "0.0.0.0/0"
   }
 }
+
+network_cidr                 = "10.0.0.0/16"
 
 
 # ==========================
@@ -270,7 +266,7 @@ alarm = {
 logs = {
   retention_in_days = 7 # days
   group_paths = {
-    application = "/aws/ec2/application" 
+    application = "/aws/ec2/application"
     nginx       = "/aws/ec2/nginx"
     system      = "/aws/ec2/system"
     rds         = "/aws/rds/mysql-logs"

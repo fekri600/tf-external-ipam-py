@@ -5,4 +5,5 @@ locals {
   #paths
   policies = "${path.root}/policies"
   scripts  = "${path.root}/scripts"
+  ipam     = "${path.root}/ipam"
 }
