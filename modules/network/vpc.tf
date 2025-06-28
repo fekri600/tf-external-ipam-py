@@ -1,39 +1,5 @@
 # in your module/network/vpc.tf
 
-data "external" "ipam_vpc" {
-  program = ["python3", "${var.ipam_path}/ipam_provider.py"]
-
-  query = {
-    resource_type = "vpc"
-    base_cidr     = var.network_cidr
-    prefix        = 16
-    env           = var.environment
-  }
-}
-
-locals {
-  vpc_cidr = data.external.ipam_vpc.result["cidr"]
-}
-
-
-data "external" "ipam" {
-  program = ["python3", "${var.ipam_path}/ipam_provider.py"]
-
-  query = {
-    resource_type  = "subnet"
-    env            = var.environment
-    vpc_cidr      = local.vpc_cidr
-    public_count  = length(var.network.availability_zones)
-    private_count = length(var.network.availability_zones)
-    prefix        = 24
-  }
-}
-
-locals {
-  publics  = split(",", data.external.ipam.result.public_subnets)
-  privates = split(",", data.external.ipam.result.private_subnets)
-}
-
 resource "aws_vpc" "this" {
   cidr_block           = local.vpc_cidr
   enable_dns_support   = var.network.enable_dns_support
@@ -57,7 +23,6 @@ resource "aws_subnet" "private" {
   cidr_block        = local.privates[count.index]
   availability_zone = var.network.availability_zones[count.index]
 }
-# …and the rest of your IGW, NAT, RTs, RDS/Redis groups…
 
 
 # Attach an Internet Gateway to the VPC for public internet access
@@ -122,14 +87,4 @@ resource "aws_route_table_association" "public" {
   route_table_id = aws_route_table.public.id
 }
 
-# Create an RDS Subnet Group using private subnets
-resource "aws_db_subnet_group" "rds" {
-  name       = "${var.prefix}-${var.environment}-rds-subnet-group"
-  subnet_ids = aws_subnet.private[*].id
-}
 
-# Create an ElastiCache Subnet Group using private subnets
-resource "aws_elasticache_subnet_group" "redis" {
-  name       = "${var.prefix}-${var.environment}-redis-subnet-group"
-  subnet_ids = aws_subnet.private[*].id
-}

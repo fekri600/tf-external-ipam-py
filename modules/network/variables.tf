@@ -10,16 +10,14 @@ variable "project_settings" {
 }
 variable "network" {
   type = object({
+    network_cidr  =  string
     enable_dns_support       = bool
     enable_dns_hostnames     = bool
+    default_route_cidr_block = string
     availability_zones       = list(string)
     eip_domain               = string
-    default_route_cidr_block = string
+    
   })
-}
-
-variable "network_cidr" {
-  type = string
 }
 
 variable "ipam_path" {
@@ -70,8 +68,6 @@ variable "security_groups" {
     port = object({
       http  = number
       https = number
-      mysql = number
-      redis = number
       any   = number
     })
     protocol = object({

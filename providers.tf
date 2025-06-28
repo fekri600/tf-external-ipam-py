@@ -6,7 +6,13 @@ terraform {
       source  = "hashicorp/aws"
       version = "5.97.0"
     }
+
+    null = {
+      source  = "hashicorp/null"
+      version = "~> 3.0"
+    }
   }
+
 
   # backend "s3" {
   #   bucket         = "backend-s3-bucket-1290"

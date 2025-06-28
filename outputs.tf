@@ -4,6 +4,3 @@ output "vpc_id" {
   description = "VPC ID"
 }
 
-# output "log_group_names" {
-#   value = module.cloudwatch.log_group_names
-# }
