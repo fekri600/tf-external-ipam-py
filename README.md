@@ -48,7 +48,7 @@ It enables:
 
 ---
 
-## 📁 Repository Structure
+## Repository Structure
 
 <details>
 <summary>Click to expand</summary>
@@ -162,7 +162,7 @@ New `/24` blocks will be added under the existing `/16`.
 
 ---
 
-## 🧹 Cleanup
+## Cleanup
 
 ```bash
 terraform destroy -auto-approve
