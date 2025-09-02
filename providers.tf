@@ -1,20 +1,12 @@
-terraform {
-  required_version = "1.11.4"
-
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "5.97.0"
-    }
-
-    null = {
-      source  = "hashicorp/null"
-      version = "~> 3.0"
-    }
-  }
-
+provider "aws" {
+  region  = "us-east-1"
+  alias   = "primary"
+  profile = "default"
 }
 
 provider "aws" {
-  region = "us-east-1"
+  region = "us-west-1"
+  alias  = "secondary"
+
 }
+
